@@ -1,0 +1,38 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <link rel="manifest" href="manifest.json">
+<script>
+  if ('serviceWorker' in navigator)
+    navigator.serviceWorker.register('./sw.js');
+</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro de Horas Extras</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <div class="login-container">
+    <div class="login-card">
+      <img src="assets/Escudo1.jpg" alt="Logo" class="logo">
+      <h1>Registro de Horas Extras</h1>
+      <p>Ingresa tu código y contraseña</p>
+
+      <label>CÓDIGO</label>
+      <input type="text" id="codigo" placeholder="Ej: 30">
+
+      <label>CONTRASEÑA</label>
+      <input type="password" id="pin" placeholder="Ej: 1030">
+
+      <button onclick="login()">Ingresar</button>
+
+      <div class="footer-login">
+       Desarrollado por Rodrigo Pizarro G.
+      </div>
+    </div>
+  </div>    
+  <script src="js/auth.js"></script>
+</body>
+</html>

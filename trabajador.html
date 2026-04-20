@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <link rel="manifest" href="manifest.json">
+<script>
+  if ('serviceWorker' in navigator)
+    navigator.serviceWorker.register('./sw.js');
+</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Trabajador</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <div class="panel">
+    <div class="top-bar">
+  <h1 id="bienvenida">Bienvenido, Juan Donoso Torres</h1>
+
+  <div class="top-right">
+  <img src="assets/Escudo1.jpg" alt="Logo" class="logo-top">
+
+  <button class="cerrar-btn" onclick="cerrarSesion()">Cerrar Sesión</button>
+</div>
+</div>
+
+    <div class="card-solicitud">
+      <h2>Nueva Solicitud</h2>
+
+      <div class="form-grid">
+        <input type="date" id="fecha">
+        <input type="time" id="inicio">
+        <input type="time" id="fin">
+        <textarea id="motivo" placeholder="Motivo"></textarea>
+
+        <select id="autorizador" class="select-autorizador">
+        <option value="">Seleccionar autorizador</option>
+        <option value="Ariel Gonzalez">Ariel Gonzalez</option>
+         <option value="Rodrigo Andres Pizarro Gonzalez">Rodrigo Andres Pizarro Gonzalez</option>
+        </select>
+
+        <button class="btn-enviar" onclick="guardarSolicitud()">Enviar Solicitud</button>
+        <div id="accesoAdmin" style="display:none; margin-top:20px;">
+  <button class="btn-enviar" onclick="window.location.href='admin.html'">
+    Ir a Panel Administrador
+  </button>
+</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/trabajador.js"></script>
+
+  <script>
+    function cerrarSesion() {
+      localStorage.clear();
+      window.location.replace('./index.html');
+    }
+  </script>
+
+</body>
+</html>
