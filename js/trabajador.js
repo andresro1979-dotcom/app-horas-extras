@@ -33,9 +33,11 @@ function guardarSolicitud() {
     }
   }
 
-  const horaInicio = new Date(`2000-01-01 ${inicio}`);
-  const horaFin = new Date(`2000-01-01 ${fin}`);
-  const diferencia = (horaFin - horaInicio) / (1000 * 60 * 60);
+  const horaInicio = new Date(`2000-01-01T${inicio}:00`);
+  const horaFin = new Date(`2000-01-01T${fin}:00`);
+  let diferencia = (horaFin - horaInicio) / (1000 * 60 * 60);
+  if (diferencia < 0) diferencia += 24; // ✅ corrige turno que cruza medianoche
+  const totalHoras = Math.round(diferencia * 100) / 100;
 
   const datos = {
     fecha: fecha,
@@ -43,7 +45,7 @@ function guardarSolicitud() {
     nombre: nombre,
     inicio: inicio,
     fin: fin,
-    totalHoras: diferencia,
+    totalHoras: totalHoras,
     motivo: motivo,
     estado: estado,
     autorizadoPor: autorizadoPor

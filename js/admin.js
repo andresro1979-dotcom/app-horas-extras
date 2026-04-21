@@ -67,7 +67,6 @@ function aprobarSolicitud(id, boton) {
   boton.textContent = 'Aprobando...';
   boton.closest('.acciones').querySelector('.btn-rechazar').disabled = true;
 
-  // ✅ Usa fetch en lugar de new Image()
   fetch(urlScript + '?accion=aprobar&id=' + id + '&t=' + Date.now())
     .then(() => {
       const card = boton.closest('.solicitud-card');
@@ -90,7 +89,6 @@ function rechazarSolicitud(id, boton) {
   boton.textContent = 'Rechazando...';
   boton.closest('.acciones').querySelector('.btn-aprobar').disabled = true;
 
-  // ✅ Usa fetch en lugar de new Image()
   fetch(urlScript + '?accion=rechazar&id=' + id + '&t=' + Date.now())
     .then(() => {
       const card = boton.closest('.solicitud-card');
@@ -150,19 +148,31 @@ function cerrarResumen() {
   document.getElementById('modalResumen').classList.add('oculto');
 }
 
-// ✅ Fechas corregidas para zona horaria Chile
 function formatearFecha(fecha) {
   if (!fecha) return '';
-  const [anio, mes, dia] = String(fecha).split('-');
-  if (anio && mes && dia) return `${dia}-${mes}-${anio}`;
-  return new Date(fecha).toLocaleDateString('es-CL');
+  const str = String(fecha);
+  const match = str.match(/(\d{4})-(\d{2})-(\d{2})/);
+  if (match) return `${match[3]}-${match[2]}-${match[1]}`;
+  const d = new Date(fecha);
+  if (!isNaN(d)) return d.toLocaleDateString('es-CL');
+  return str;
 }
 
-// ✅ Horas corregidas
 function formatearHora(hora) {
   if (!hora) return '';
-  if (String(hora).includes(':')) return hora;
-  return new Date(hora).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
+  const str = String(hora);
+  if (/^\d{1,2}:\d{2}$/.test(str)) return str;
+  if (!isNaN(str) && str !== '' && str.includes('.')) {
+    const totalMin = Math.round(parseFloat(str) * 24 * 60);
+    const h = Math.floor(totalMin / 60) % 24;
+    const m = totalMin % 60;
+    return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+  }
+  const d = new Date(str);
+  if (!isNaN(d)) {
+    return d.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });
+  }
+  return str;
 }
 
 cargarSolicitudes();
