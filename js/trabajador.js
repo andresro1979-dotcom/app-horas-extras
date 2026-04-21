@@ -24,14 +24,15 @@ function guardarSolicitud() {
   let autorizadoPor = document.getElementById('autorizador').value;
 
   if (esAdmin === 'si') {
-  estado = 'Aprobada';
-  autorizadoPor = nombre;
-} else {
-  if (!autorizadoPor) {
-    alert('Selecciona quién autorizará la solicitud');
-    return;
+    estado = 'Aprobada';
+    autorizadoPor = nombre;
+  } else {
+    if (!autorizadoPor) {
+      alert('Selecciona quién autorizará la solicitud');
+      return;
+    }
   }
-}
+
   const horaInicio = new Date(`2000-01-01 ${inicio}`);
   const horaFin = new Date(`2000-01-01 ${fin}`);
   const diferencia = (horaFin - horaInicio) / (1000 * 60 * 60);
@@ -53,9 +54,8 @@ function guardarSolicitud() {
     body: JSON.stringify(datos)
   })
   .then(response => response.json())
-  .then(data => {
+  .then(() => {
     alert('Solicitud enviada correctamente');
-
     document.getElementById('fecha').value = '';
     document.getElementById('inicio').value = '';
     document.getElementById('fin').value = '';
