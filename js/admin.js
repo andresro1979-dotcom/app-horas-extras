@@ -151,10 +151,14 @@ function cerrarResumen() {
 function formatearFecha(fecha) {
   if (!fecha) return '';
   const str = String(fecha);
-  const match = str.match(/(\d{4})-(\d{2})-(\d{2})/);
+  const match = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
   if (match) return `${match[3]}-${match[2]}-${match[1]}`;
-  const d = new Date(fecha);
-  if (!isNaN(d)) return d.toLocaleDateString('es-CL');
+  const d = new Date(str);
+  if (!isNaN(d.getTime())) {
+    const day = String(d.getUTCDate()).padStart(2, '0');
+    const month = String(d.getUTCMonth() + 1).padStart(2, '0');
+    return `${day}-${month}-${d.getUTCFullYear()}`;
+  }
   return str;
 }
 
@@ -162,15 +166,14 @@ function formatearHora(hora) {
   if (!hora) return '';
   const str = String(hora);
   if (/^\d{1,2}:\d{2}$/.test(str)) return str;
+  // ISO timestamp de Google Sheets (ej: "1899-12-31T05:23:00.000Z")
+  const isoMatch = str.match(/T(\d{2}):(\d{2})/);
+  if (isoMatch) return `${isoMatch[1]}:${isoMatch[2]}`;
   if (!isNaN(str) && str !== '' && str.includes('.')) {
     const totalMin = Math.round(parseFloat(str) * 24 * 60);
     const h = Math.floor(totalMin / 60) % 24;
     const m = totalMin % 60;
     return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
-  }
-  const d = new Date(str);
-  if (!isNaN(d)) {
-    return d.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });
   }
   return str;
 }
