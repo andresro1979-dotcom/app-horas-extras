@@ -61,39 +61,49 @@ function cargarSolicitudes() {
 }
 
 function aprobarSolicitud(id, boton) {
-  if (!confirm('Aprobar esta solicitud de horas extras?')) return;
+  if (!confirm('¿Aprobar esta solicitud de horas extras?')) return;
+
   boton.disabled = true;
   boton.textContent = 'Aprobando...';
   boton.closest('.acciones').querySelector('.btn-rechazar').disabled = true;
 
-  const img = new Image();
-  img.src = urlScript + '?accion=aprobar&id=' + id + '&t=' + Date.now();
-
-  const card = boton.closest('.solicitud-card');
-  setTimeout(() => {
-    card.querySelector('.estado').textContent = 'Aprobada';
-    card.querySelector('.estado').className = 'estado aprobada-texto';
-    card.className = 'solicitud-card aprobada';
-    setTimeout(() => card.remove(), 1000);
-  }, 1500);
+  // ✅ Usa fetch en lugar de new Image()
+  fetch(urlScript + '?accion=aprobar&id=' + id + '&t=' + Date.now())
+    .then(() => {
+      const card = boton.closest('.solicitud-card');
+      card.querySelector('.estado').textContent = 'Aprobada';
+      card.querySelector('.estado').className = 'estado aprobada-texto';
+      card.className = 'solicitud-card aprobada';
+      setTimeout(() => card.remove(), 1000);
+    })
+    .catch(() => {
+      alert('Error al aprobar. Intenta de nuevo.');
+      boton.disabled = false;
+      boton.textContent = '✓ Aprobar';
+    });
 }
 
 function rechazarSolicitud(id, boton) {
-  if (!confirm('Rechazar esta solicitud de horas extras?')) return;
+  if (!confirm('¿Rechazar esta solicitud de horas extras?')) return;
+
   boton.disabled = true;
   boton.textContent = 'Rechazando...';
   boton.closest('.acciones').querySelector('.btn-aprobar').disabled = true;
 
-  const img = new Image();
-  img.src = urlScript + '?accion=rechazar&id=' + id + '&t=' + Date.now();
-
-  const card = boton.closest('.solicitud-card');
-  setTimeout(() => {
-    card.querySelector('.estado').textContent = 'Rechazada';
-    card.querySelector('.estado').className = 'estado rechazada-texto';
-    card.className = 'solicitud-card rechazada';
-    setTimeout(() => card.remove(), 1000);
-  }, 1500);
+  // ✅ Usa fetch en lugar de new Image()
+  fetch(urlScript + '?accion=rechazar&id=' + id + '&t=' + Date.now())
+    .then(() => {
+      const card = boton.closest('.solicitud-card');
+      card.querySelector('.estado').textContent = 'Rechazada';
+      card.querySelector('.estado').className = 'estado rechazada-texto';
+      card.className = 'solicitud-card rechazada';
+      setTimeout(() => card.remove(), 1000);
+    })
+    .catch(() => {
+      alert('Error al rechazar. Intenta de nuevo.');
+      boton.disabled = false;
+      boton.textContent = '✗ Rechazar';
+    });
 }
 
 function mostrarResumen() {
@@ -121,7 +131,7 @@ function mostrarResumen() {
       } else {
         todasLasSolicitudes.forEach(s => {
           const claseEstado = s.estado === 'Pendiente' ? 'pendiente-texto' :
-                              s.estado === 'Aprobada' ? 'aprobada-texto' : 'rechazada-texto';
+                              s.estado === 'Aprobada'  ? 'aprobada-texto' : 'rechazada-texto';
           const item = document.createElement('div');
           item.className = 'resumen-item';
           item.innerHTML =
@@ -140,13 +150,18 @@ function cerrarResumen() {
   document.getElementById('modalResumen').classList.add('oculto');
 }
 
+// ✅ Fechas corregidas para zona horaria Chile
 function formatearFecha(fecha) {
   if (!fecha) return '';
+  const [anio, mes, dia] = String(fecha).split('-');
+  if (anio && mes && dia) return `${dia}-${mes}-${anio}`;
   return new Date(fecha).toLocaleDateString('es-CL');
 }
 
+// ✅ Horas corregidas
 function formatearHora(hora) {
   if (!hora) return '';
+  if (String(hora).includes(':')) return hora;
   return new Date(hora).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
 }
 
