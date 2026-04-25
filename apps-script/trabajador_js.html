@@ -1,0 +1,97 @@
+<script>
+const nombre = localStorage.getItem('nombreUsuario');
+const esAdmin = localStorage.getItem('esAdmin');
+const rol = localStorage.getItem('rolUsuario');
+const codigo = localStorage.getItem('codigoUsuario');
+
+document.getElementById('bienvenida').innerText = 'Bienvenido, ' + nombre;
+
+if (esAdmin === 'si') {
+  document.getElementById('accesoAdmin').style.display = 'block';
+}
+
+cargarAutorizadores();
+
+function cargarAutorizadores() {
+  google.script.run
+    .withSuccessHandler(admins => {
+      const select = document.getElementById('autorizador');
+      select.innerHTML = '<option value="">Seleccionar autorizador</option>';
+
+      admins.forEach(admin => {
+        const option = document.createElement('option');
+        option.value = admin.nombre;
+        option.textContent = admin.nombre;
+        select.appendChild(option);
+      });
+    })
+    .withFailureHandler(() => {
+      console.log('No se pudieron cargar los autorizadores');
+    })
+    .listarAdministradores();
+}
+
+function guardarSolicitud() {
+  const fecha = document.getElementById('fecha').value;
+  const inicio = document.getElementById('inicio').value;
+  const fin = document.getElementById('fin').value;
+  const motivo = document.getElementById('motivo').value;
+  const boton = document.querySelector('.btn-enviar');
+
+  if (!fecha || !inicio || !fin || !motivo) {
+    alert('Completa todos los campos');
+    return;
+  }
+
+  let estado = 'Pendiente';
+  let autorizadoPor = document.getElementById('autorizador').value;
+
+  if (esAdmin === 'si') {
+    estado = 'Aprobada';
+    autorizadoPor = nombre;
+  } else if (!autorizadoPor) {
+    alert('Selecciona quien autorizara la solicitud');
+    return;
+  }
+
+  const horaInicio = new Date(`2000-01-01T${inicio}:00`);
+  const horaFin = new Date(`2000-01-01T${fin}:00`);
+  let diferencia = (horaFin - horaInicio) / (1000 * 60 * 60);
+  if (diferencia < 0) diferencia += 24;
+  const totalHoras = Math.round(diferencia * 100) / 100;
+
+  const datos = {
+    fecha: fecha,
+    codigo: codigo,
+    nombre: nombre,
+    inicio: inicio,
+    fin: fin,
+    totalHoras: totalHoras,
+    motivo: motivo,
+    estado: estado,
+    autorizadoPor: autorizadoPor
+  };
+
+  boton.disabled = true;
+  boton.textContent = 'Enviando...';
+
+  google.script.run
+    .withSuccessHandler(() => {
+      alert('Solicitud enviada correctamente');
+      document.getElementById('fecha').value = '';
+      document.getElementById('inicio').value = '';
+      document.getElementById('fin').value = '';
+      document.getElementById('motivo').value = '';
+      if (esAdmin !== 'si') document.getElementById('autorizador').value = '';
+      boton.disabled = false;
+      boton.textContent = 'Enviar Solicitud';
+    })
+    .withFailureHandler(error => {
+      alert('Error al enviar solicitud');
+      console.log(error);
+      boton.disabled = false;
+      boton.textContent = 'Enviar Solicitud';
+    })
+    .guardarSolicitud(datos);
+}
+</script>

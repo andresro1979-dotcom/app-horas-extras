@@ -1,0 +1,90 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Administrador</title>
+  <?!= include('styles'); ?>
+  <script>const APP_URL = '<?!= getAppUrl(); ?>';</script>
+  <?!= include('logo_data'); ?>
+</head>
+<body>
+
+  <div class="panel">
+
+    <div class="top-bar">
+      <h1>Panel Administrador</h1>
+
+      <div class="top-right">
+        <div class="logo-container">
+          <img src="" data-logo alt="Logo" class="logo-top">
+        </div>
+        <button class="btn-resumen" onclick="mostrarResumen()">Ver Resumen</button>
+        <button class="cerrar-btn" onclick="cerrarSesion()">Cerrar Sesion</button>
+      </div>
+    </div>
+
+    <div class="admin-grid">
+      <section class="card-solicitud admin-tool">
+        <h2>Crear Solicitud</h2>
+        <div class="form-grid admin-form-grid">
+          <select id="adminFuncionario" class="select-autorizador">
+            <option value="">Seleccionar funcionario</option>
+          </select>
+          <input type="date" id="adminFecha">
+          <input type="time" id="adminInicio">
+          <input type="time" id="adminFin">
+          <textarea id="adminMotivo" placeholder="Motivo"></textarea>
+          <button class="btn-enviar" onclick="crearSolicitudAdmin()">Crear y Aprobar</button>
+        </div>
+      </section>
+
+      <section class="card-solicitud admin-tool">
+        <h2>Crear Usuario</h2>
+        <div class="form-grid admin-form-grid usuario-form-grid">
+          <input type="text" id="nuevoCodigo" placeholder="Codigo">
+          <input type="password" id="nuevaClave" placeholder="Contraseña">
+          <input type="text" id="nuevoNombre" placeholder="Nombre completo">
+          <select id="nuevoRol" class="select-autorizador">
+            <option value="Usuario">Usuario</option>
+            <option value="Admin">Administrador</option>
+          </select>
+          <button class="btn-enviar" onclick="crearUsuario()">Guardar Usuario</button>
+        </div>
+      </section>
+    </div>
+
+    <h2 class="seccion-titulo">Solicitudes Pendientes</h2>
+    <div id="contenedorSolicitudes"></div>
+
+  </div>
+
+  <!-- Modal Resumen -->
+  <div id="modalResumen" class="modal-overlay oculto" onclick="cerrarResumenFuera(event)">
+    <div class="modal-resumen">
+      <div class="modal-header">
+        <h2>Resumen del Mes</h2>
+        <button class="btn-cerrar-modal" onclick="cerrarResumen()">&#x2715;</button>
+      </div>
+      <div id="listaResumen"></div>
+    </div>
+  </div>
+  <?!= include('admin_js'); ?>
+
+  <script>
+    function cerrarSesion() {
+      localStorage.clear();
+      window.location.replace(APP_URL);
+    }
+
+    function cerrarResumenFuera(event) {
+      if (event.target === document.getElementById('modalResumen')) {
+        cerrarResumen();
+      }
+    }
+  </script>
+
+</body>
+</html>
+
+

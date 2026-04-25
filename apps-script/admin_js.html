@@ -1,0 +1,294 @@
+<script>
+const nombreAdmin = localStorage.getItem('nombreUsuario');
+const codigoAdmin = localStorage.getItem('codigoUsuario');
+let todasLasSolicitudes = [];
+let usuarios = [];
+
+function iniciarPanelAdmin() {
+  cargarUsuarios();
+  cargarSolicitudes();
+}
+
+function cargarUsuarios() {
+  google.script.run
+    .withSuccessHandler(data => {
+      usuarios = data;
+      renderizarSelectFuncionarios();
+    })
+    .withFailureHandler(() => alert('Error al cargar usuarios'))
+    .listarUsuarios();
+}
+
+function renderizarSelectFuncionarios() {
+  const select = document.getElementById('adminFuncionario');
+  select.innerHTML = '<option value="">Seleccionar funcionario</option>';
+
+  usuarios
+    .filter(usuario => usuario.rol !== 'Admin')
+    .forEach(usuario => {
+      const option = document.createElement('option');
+      option.value = usuario.codigo;
+      option.textContent = usuario.nombre + ' - ' + usuario.codigo;
+      select.appendChild(option);
+    });
+}
+
+function crearUsuario() {
+  const codigo = document.getElementById('nuevoCodigo').value.trim();
+  const clave = document.getElementById('nuevaClave').value.trim();
+  const nombre = document.getElementById('nuevoNombre').value.trim();
+  const rol = document.getElementById('nuevoRol').value;
+
+  if (!codigo || !clave || !nombre) {
+    alert('Completa codigo, contraseña y nombre');
+    return;
+  }
+
+  google.script.run
+    .withSuccessHandler(() => {
+      alert('Usuario guardado correctamente');
+      document.getElementById('nuevoCodigo').value = '';
+      document.getElementById('nuevaClave').value = '';
+      document.getElementById('nuevoNombre').value = '';
+      document.getElementById('nuevoRol').value = 'Usuario';
+      cargarUsuarios();
+    })
+    .withFailureHandler(error => {
+      console.log(error);
+      alert('Error al guardar usuario');
+    })
+    .guardarUsuario({ codigo, clave, nombre, rol });
+}
+
+function crearSolicitudAdmin() {
+  const codigoFuncionario = document.getElementById('adminFuncionario').value;
+  const funcionario = usuarios.find(usuario => String(usuario.codigo) === String(codigoFuncionario));
+  const fecha = document.getElementById('adminFecha').value;
+  const inicio = document.getElementById('adminInicio').value;
+  const fin = document.getElementById('adminFin').value;
+  const motivo = document.getElementById('adminMotivo').value.trim();
+
+  if (!funcionario || !fecha || !inicio || !fin || !motivo) {
+    alert('Completa todos los datos de la solicitud');
+    return;
+  }
+
+  const totalHoras = calcularTotalHoras(inicio, fin);
+  const datos = {
+    fecha,
+    codigo: funcionario.codigo,
+    nombre: funcionario.nombre,
+    inicio,
+    fin,
+    totalHoras,
+    motivo,
+    estado: 'Aprobada',
+    autorizadoPor: nombreAdmin
+  };
+
+  google.script.run
+    .withSuccessHandler(() => {
+      alert('Solicitud creada y aprobada correctamente');
+      document.getElementById('adminFuncionario').value = '';
+      document.getElementById('adminFecha').value = '';
+      document.getElementById('adminInicio').value = '';
+      document.getElementById('adminFin').value = '';
+      document.getElementById('adminMotivo').value = '';
+      cargarSolicitudes();
+    })
+    .withFailureHandler(error => {
+      console.log(error);
+      alert('Error al crear solicitud');
+    })
+    .guardarSolicitud(datos);
+}
+
+function calcularTotalHoras(inicio, fin) {
+  const horaInicio = new Date(`2000-01-01T${inicio}:00`);
+  const horaFin = new Date(`2000-01-01T${fin}:00`);
+  let diferencia = (horaFin - horaInicio) / (1000 * 60 * 60);
+  if (diferencia < 0) diferencia += 24;
+  return Math.round(diferencia * 100) / 100;
+}
+
+function cargarSolicitudes() {
+  google.script.run
+    .withSuccessHandler(renderizarSolicitudes)
+    .withFailureHandler(() => alert('Error al cargar solicitudes'))
+    .listarSolicitudes();
+}
+
+function renderizarSolicitudes(data) {
+  const contenedor = document.getElementById('contenedorSolicitudes');
+  contenedor.innerHTML = '';
+
+  const hoy = new Date();
+  const mesActual = hoy.getMonth();
+  const anioActual = hoy.getFullYear();
+
+  todasLasSolicitudes = data.filter(item => {
+    const fechaSolicitud = crearFechaLocal(item.fecha);
+    return (
+      item.autorizadoPor === nombreAdmin &&
+      fechaSolicitud &&
+      fechaSolicitud.getMonth() === mesActual &&
+      fechaSolicitud.getFullYear() === anioActual
+    );
+  });
+
+  const pendientes = todasLasSolicitudes.filter(item => item.estado === 'Pendiente');
+
+  if (pendientes.length === 0) {
+    contenedor.innerHTML = '<div class="sin-solicitudes">No hay solicitudes pendientes para aprobar</div>';
+    return;
+  }
+
+  pendientes.forEach((solicitud) => {
+    const card = document.createElement('div');
+    card.className = 'solicitud-card pendiente';
+    card.id = 'card-' + solicitud.id;
+
+    card.innerHTML = `
+      <div class="solicitud-header">
+        <h2>${solicitud.nombre}</h2>
+        <span class="estado pendiente-texto">${solicitud.estado}</span>
+      </div>
+      <div class="solicitud-info">
+        <p><strong>Fecha:</strong> ${formatearFecha(solicitud.fecha)}</p>
+        <p><strong>Hora Inicio:</strong> ${formatearHora(solicitud.inicio)}</p>
+        <p><strong>Hora Termino:</strong> ${formatearHora(solicitud.fin)}</p>
+        <p><strong>Total Horas:</strong> ${solicitud.totalHoras}</p>
+        <p><strong>Motivo:</strong> ${solicitud.motivo}</p>
+        <p><strong>Autorizado Por:</strong> ${solicitud.autorizadoPor}</p>
+      </div>
+      <div class="acciones">
+        <button class="btn-aprobar" onclick="aprobarSolicitud('${solicitud.id}', this)">&#10003; Aprobar</button>
+        <button class="btn-rechazar" onclick="rechazarSolicitud('${solicitud.id}', this)">&#10007; Rechazar</button>
+      </div>
+    `;
+
+    contenedor.appendChild(card);
+  });
+}
+
+function aprobarSolicitud(id, boton) {
+  if (!confirm('Aprobar esta solicitud de horas extras?')) return;
+  cambiarEstado(id, 'Aprobada', boton);
+}
+
+function rechazarSolicitud(id, boton) {
+  if (!confirm('Rechazar esta solicitud de horas extras?')) return;
+  cambiarEstado(id, 'Rechazada', boton);
+}
+
+function cambiarEstado(id, estado, boton) {
+  const acciones = boton.closest('.acciones');
+  const botones = acciones.querySelectorAll('button');
+  botones.forEach(btn => btn.disabled = true);
+  boton.textContent = estado === 'Aprobada' ? 'Aprobando...' : 'Rechazando...';
+
+  google.script.run
+    .withSuccessHandler(() => {
+      const card = boton.closest('.solicitud-card');
+      card.querySelector('.estado').textContent = estado;
+      card.querySelector('.estado').className = 'estado ' + (estado === 'Aprobada' ? 'aprobada-texto' : 'rechazada-texto');
+      card.className = 'solicitud-card ' + (estado === 'Aprobada' ? 'aprobada' : 'rechazada');
+      setTimeout(() => card.remove(), 1000);
+    })
+    .withFailureHandler(() => {
+      alert('Error al actualizar. Intenta de nuevo.');
+      botones.forEach(btn => btn.disabled = false);
+      boton.textContent = estado === 'Aprobada' ? '✓ Aprobar' : '✗ Rechazar';
+    })
+    .cambiarEstadoSolicitud(id, estado);
+}
+
+function mostrarResumen() {
+  google.script.run
+    .withSuccessHandler(data => {
+      renderizarResumen(data);
+      document.getElementById('modalResumen').classList.remove('oculto');
+    })
+    .withFailureHandler(() => alert('Error al cargar el resumen'))
+    .listarSolicitudes();
+}
+
+function renderizarResumen(data) {
+  const hoy = new Date();
+  const mesActual = hoy.getMonth();
+  const anioActual = hoy.getFullYear();
+
+  todasLasSolicitudes = data.filter(item => {
+    const fechaSolicitud = crearFechaLocal(item.fecha);
+    return (
+      item.autorizadoPor === nombreAdmin &&
+      fechaSolicitud &&
+      fechaSolicitud.getMonth() === mesActual &&
+      fechaSolicitud.getFullYear() === anioActual
+    );
+  });
+
+  const lista = document.getElementById('listaResumen');
+  lista.innerHTML = '';
+
+  if (todasLasSolicitudes.length === 0) {
+    lista.innerHTML = '<p class="sin-datos">Sin solicitudes este mes</p>';
+    return;
+  }
+
+  todasLasSolicitudes.forEach(s => {
+    const claseEstado = s.estado === 'Pendiente' ? 'pendiente-texto' :
+                        s.estado === 'Aprobada'  ? 'aprobada-texto' : 'rechazada-texto';
+    const item = document.createElement('div');
+    item.className = 'resumen-item';
+    item.innerHTML =
+      '<span class="resumen-nombre">' + s.nombre + '</span>' +
+      '<span class="estado ' + claseEstado + '">' + s.estado + '</span>';
+    lista.appendChild(item);
+  });
+}
+
+function cerrarResumen() {
+  document.getElementById('modalResumen').classList.add('oculto');
+}
+
+function crearFechaLocal(fecha) {
+  if (!fecha) return null;
+  const str = String(fecha);
+  const match = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (match) return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+  const d = new Date(str);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function formatearFecha(fecha) {
+  if (!fecha) return '';
+  const str = String(fecha);
+  const match = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (match) return `${match[3]}-${match[2]}-${match[1]}`;
+  const d = new Date(str);
+  if (!isNaN(d.getTime())) {
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    return `${day}-${month}-${d.getFullYear()}`;
+  }
+  return str;
+}
+
+function formatearHora(hora) {
+  if (!hora) return '';
+  const str = String(hora);
+  if (/^\d{1,2}:\d{2}$/.test(str)) return str;
+  const isoMatch = str.match(/T(\d{2}):(\d{2})/);
+  if (isoMatch) return `${isoMatch[1]}:${isoMatch[2]}`;
+  if (!isNaN(str) && str !== '' && str.includes('.')) {
+    const totalMin = Math.round(parseFloat(str) * 24 * 60);
+    const h = Math.floor(totalMin / 60) % 24;
+    const m = totalMin % 60;
+    return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+  }
+  return str;
+}
+
+iniciarPanelAdmin();
+</script>

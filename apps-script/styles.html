@@ -1,3 +1,4 @@
+﻿<style>
 body {
   margin: 0;
   padding: 0;
@@ -476,3 +477,148 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   color: #6b7280;
   padding: 20px 0;
 }
+
+.admin-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+.admin-tool {
+  min-height: 210px;
+}
+
+.admin-form-grid {
+  grid-template-columns: 1fr 1fr;
+  align-items: stretch;
+}
+
+.admin-form-grid textarea {
+  grid-column: 1 / -1;
+}
+
+.admin-form-grid .btn-enviar {
+  grid-column: 1 / -1;
+}
+
+.usuario-form-grid {
+  grid-template-columns: 1fr 1fr;
+}
+
+.usuario-form-grid input,
+.usuario-form-grid select {
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.seccion-titulo {
+  color: white;
+  font-size: 28px;
+  margin: 0 0 18px;
+}
+
+@media (max-width: 640px) {
+  body {
+    min-height: 100svh;
+  }
+
+  .login-container {
+    align-items: stretch;
+    padding: 16px;
+  }
+
+  .login-card {
+    max-width: none;
+    border-radius: 18px;
+    padding: 28px 22px;
+    margin: auto 0;
+  }
+
+  .login-card h1 {
+    font-size: 24px;
+  }
+
+  .login-card input,
+  .login-card button {
+    box-sizing: border-box;
+  }
+
+  .panel {
+    padding: 18px;
+  }
+
+  .top-bar {
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .top-right {
+    flex-shrink: 0;
+  }
+
+  .panel h1 {
+    font-size: 28px;
+    line-height: 1.15;
+    margin-bottom: 20px;
+  }
+
+  .card-solicitud {
+    border-radius: 16px;
+    padding: 18px;
+  }
+
+  .card-solicitud h2 {
+    font-size: 22px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-grid,
+  .admin-form-grid,
+  .usuario-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-tool {
+    min-height: auto;
+  }
+
+  .form-grid input,
+  .form-grid textarea,
+  .select-autorizador,
+  .btn-enviar {
+    box-sizing: border-box;
+    width: 100%;
+  }
+
+  .select-autorizador {
+    height: 56px;
+  }
+
+  .solicitud-header,
+  .acciones,
+  .resumen-item {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .solicitud-header {
+    gap: 8px;
+  }
+
+  .acciones {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .modal-resumen {
+    width: calc(100% - 32px);
+    padding: 20px;
+    border-radius: 16px;
+  }
+}
+
+</style>

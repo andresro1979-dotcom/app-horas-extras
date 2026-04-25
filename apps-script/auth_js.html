@@ -1,0 +1,43 @@
+<script>
+function login() {
+  const codigoIngresado = document.getElementById('codigo').value.trim();
+  const claveIngresada = document.getElementById('pin').value.trim();
+  const boton = document.querySelector('.login-card button');
+
+  if (!codigoIngresado || !claveIngresada) {
+    alert('Ingresa codigo y contraseña');
+    return;
+  }
+
+  boton.disabled = true;
+  boton.textContent = 'Ingresando...';
+
+  google.script.run
+    .withSuccessHandler(respuesta => {
+      boton.disabled = false;
+      boton.textContent = 'Ingresar';
+
+      if (!respuesta || !respuesta.ok) {
+        alert('Codigo o contraseña incorrectos');
+        return;
+      }
+
+      const usuario = respuesta.usuario;
+      localStorage.setItem('nombreUsuario', usuario.nombre);
+      localStorage.setItem('rolUsuario', usuario.rol);
+      localStorage.setItem('codigoUsuario', usuario.codigo);
+      localStorage.setItem('esAdmin', usuario.rol === 'Admin' ? 'si' : 'no');
+
+      window.location.href = usuario.rol === 'Admin'
+        ? APP_URL + '?page=admin'
+        : APP_URL + '?page=trabajador';
+    })
+    .withFailureHandler(error => {
+      console.log(error);
+      boton.disabled = false;
+      boton.textContent = 'Ingresar';
+      alert('Error al iniciar sesion');
+    })
+    .validarLogin(codigoIngresado, claveIngresada);
+}
+</script>

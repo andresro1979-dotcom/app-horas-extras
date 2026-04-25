@@ -1,29 +1,26 @@
-<!-- index.html -->
+﻿<!-- index.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <link rel="manifest" href="manifest.json">
-<script>
-  if ('serviceWorker' in navigator)
-    navigator.serviceWorker.register('./sw.js');
-</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Registro de Horas Extras</title>
-  <link rel="stylesheet" href="css/styles.css">
+  <?!= include('styles'); ?>
+  <script>const APP_URL = '<?!= getAppUrl(); ?>';</script>
+  <?!= include('logo_data'); ?>
 </head>
 <body>
 
   <div class="login-container">
     <div class="login-card">
-      <img src="assets/Escudo1.jpg" alt="Logo" class="logo">
+      <img src="" data-logo alt="Logo" class="logo">
       <h1>Registro de Horas Extras</h1>
-      <p>Ingresa tu código y contraseña</p>
+      <p>Ingresa tu cÃ³digo y contraseÃ±a</p>
 
-      <label>CÓDIGO</label>
+      <label>CÃ“DIGO</label>
       <input type="text" id="codigo" placeholder="Ej: 30">
 
-      <label>CONTRASEÑA</label>
+      <label>CONTRASEÃ‘A</label>
       <input type="password" id="pin" placeholder="Ej: 1030">
 
       <button onclick="login()">Ingresar</button>
@@ -32,7 +29,9 @@
        Desarrollado por Rodrigo Pizarro G.
       </div>
     </div>
-  </div>    
-  <script src="js/auth.js"></script>
+  </div>
+  <?!= include('auth_js'); ?>
 </body>
 </html>
+
+
