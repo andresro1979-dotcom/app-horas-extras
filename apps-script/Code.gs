@@ -41,17 +41,51 @@ function doPost(e) {
 
 function manejarAccion_(accion, datos) {
   switch (accion) {
-    case 'login':          return validarLogin(datos.codigo, datos.clave);
-    case 'solicitudes':    return listarSolicitudes();
-    case 'usuarios':       return listarUsuarios();
-    case 'administradores':return listarAdministradores();
-    case 'guardarSolicitud': return guardarSolicitud(datos);
-    case 'guardarUsuario':   return guardarUsuario(datos);
-    case 'cambiarEstado':    return cambiarEstadoSolicitud(datos.id, datos.estado);
-    case 'aprobar':          return cambiarEstadoSolicitud(datos.id, 'Aprobada');
-    case 'rechazar':         return cambiarEstadoSolicitud(datos.id, 'Rechazada');
+    case 'login':             return validarLogin(datos.codigo, datos.clave);
+    case 'solicitudes':       return listarSolicitudes();
+    case 'usuarios':          return listarUsuarios();
+    case 'administradores':   return listarAdministradores();
+    case 'guardarSolicitud':  return guardarSolicitud(datos);
+    case 'guardarUsuario':    return guardarUsuario(datos);
+    case 'cambiarEstado':     return cambiarEstadoSolicitud(datos.id, datos.estado);
+    case 'aprobar':           return cambiarEstadoSolicitud(datos.id, 'Aprobada');
+    case 'rechazar':          return cambiarEstadoSolicitud(datos.id, 'Rechazada');
+    case 'diagnostico':       return diagnostico_();
+    case 'reiniciarUsuarios': return reiniciarUsuarios_();
     default: return { ok: false, error: 'Accion no reconocida: ' + accion };
   }
+}
+
+function diagnostico_() {
+  var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  var hojas = ss.getSheets().map(function(s) { return s.getName() + '(' + s.getLastRow() + ' filas)'; });
+  var hUsuarios = ss.getSheetByName('Usuarios');
+  var headers = hUsuarios ? hUsuarios.getRange(1, 1, 1, hUsuarios.getLastColumn()).getValues()[0] : [];
+  var totalUsuarios = hUsuarios ? Math.max(0, hUsuarios.getLastRow() - 1) : -1;
+  return { ok: true, hojas: hojas, headersUsuarios: headers, totalUsuarios: totalUsuarios };
+}
+
+function reiniciarUsuarios_() {
+  var ss     = SpreadsheetApp.openById(SPREADSHEET_ID);
+  var vieja  = ss.getSheetByName('Usuarios');
+  if (vieja) ss.deleteSheet(vieja);
+  var sheet  = ss.insertSheet('Usuarios');
+  sheet.appendRow(['codigo','clave','nombre','rol','activo']);
+
+  var todos = usuariosIniciales_().concat([
+    { codigo: '17', clave: '1017', nombre: 'Christian Figueroa',      rol: 'Usuario' },
+    { codigo: '18', clave: '1018', nombre: 'Cesar Davila',             rol: 'Usuario' },
+    { codigo: '19', clave: '1019', nombre: 'Pablo Zapata',             rol: 'Usuario' },
+    { codigo: '20', clave: '1020', nombre: 'Pedro Fuenzalida',         rol: 'Usuario' },
+    { codigo: '21', clave: '1021', nombre: 'Paola Donoso',             rol: 'Usuario' },
+    { codigo: '22', clave: '1022', nombre: 'Maria Nir Sanchez Henao',  rol: 'Usuario' },
+    { codigo: '23', clave: '1023', nombre: 'Daisy',                    rol: 'Usuario' },
+    { codigo: '24', clave: '1024', nombre: 'Yasmin',                   rol: 'Usuario' },
+    { codigo: '25', clave: '1025', nombre: 'Jorge Toro',               rol: 'Admin'   }
+  ]);
+
+  todos.forEach(function(u) { sheet.appendRow([u.codigo, u.clave, u.nombre, u.rol, true]); });
+  return { ok: true, mensaje: 'Usuarios recreados: ' + todos.length };
 }
 
 function include(filename) {
@@ -88,10 +122,11 @@ function listarAdministradores() {
 }
 
 function validarLogin(codigo, clave) {
-  var usuario = listarUsuarios().find(function(item) {
+  var todos = listarUsuarios();
+  var usuario = todos.find(function(item) {
     return String(item.codigo) === String(codigo) && String(item.clave) === String(clave);
   });
-  if (!usuario) return { ok: false };
+  if (!usuario) return { ok: false, debug: todos.length };
   return {
     ok: true,
     usuario: { codigo: String(usuario.codigo), nombre: usuario.nombre, rol: usuario.rol }
