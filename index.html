@@ -65,9 +65,9 @@
           if (res.error === 'timeout' || res.error === 'red') {
             err.textContent = 'Sin conexion al servidor. Verifica tu internet e intenta de nuevo.';
           } else if (res.debug === 0) {
-            err.textContent = 'Error: no hay usuarios en el sistema. Contacta al administrador.';
+            err.textContent = 'Sin usuarios en el sistema. Abre la URL de reinicio.';
           } else {
-            err.textContent = 'Codigo o contrasena incorrectos';
+            err.textContent = 'Codigo o contrasena incorrectos (' + res.debug + ' usuarios en sistema)';
           }
           btn.disabled = false;
           btn.textContent = 'Ingresar';
