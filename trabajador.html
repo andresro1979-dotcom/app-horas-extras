@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#1d4f91">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="manifest" href="manifest.json">
+  <title>Panel Trabajador</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="panel">
+    <div class="top-bar">
+      <h1 id="bienvenida">Bienvenido</h1>
+      <div class="top-right">
+        <img src="" data-logo alt="Logo" class="logo-top">
+        <button class="cerrar-btn" onclick="cerrarSesion()">Cerrar Sesion</button>
+      </div>
+    </div>
+
+    <div class="card-solicitud">
+      <h2>Nueva Solicitud de Horas Extras</h2>
+      <div class="form-grid">
+        <input type="date" id="fecha">
+        <input type="time" id="inicio">
+        <input type="time" id="fin">
+        <textarea id="motivo" placeholder="Motivo de las horas extras"></textarea>
+        <select id="autorizador" class="select-autorizador">
+          <option value="">Cargando autorizadores...</option>
+        </select>
+        <button class="btn-enviar" onclick="guardarSolicitud()">Enviar Solicitud</button>
+      </div>
+    </div>
+
+    <div id="accesoAdmin" style="display:none; margin-top:20px;">
+      <button class="btn-enviar" onclick="window.location.href='admin.html'">Ir a Panel Administrador</button>
+    </div>
+  </div>
+
+  <script src="api.js"></script>
+  <script>
+    var nombre = localStorage.getItem('nombreUsuario');
+    var codigo = localStorage.getItem('codigoUsuario');
+    var esAdmin = localStorage.getItem('esAdmin');
+
+    if (!nombre || !codigo) {
+      window.location.href = 'index.html';
+    }
+
+    document.getElementById('bienvenida').textContent = 'Bienvenido, ' + nombre;
+
+    if (esAdmin === 'si') {
+      document.getElementById('accesoAdmin').style.display = 'block';
+    }
+
+    gasCall('administradores').then(function(admins) {
+      var select = document.getElementById('autorizador');
+      if (!Array.isArray(admins) || admins.length === 0) {
+        select.innerHTML = '<option value="">Sin autorizadores disponibles</option>';
+        return;
+      }
+      select.innerHTML = '<option value="">Seleccionar autorizador</option>';
+      admins.forEach(function(admin) {
+        var opt = document.createElement('option');
+        opt.value = admin.nombre;
+        opt.textContent = admin.nombre;
+        select.appendChild(opt);
+      });
+    });
+
+    function guardarSolicitud() {
+      var fecha  = document.getElementById('fecha').value;
+      var inicio = document.getElementById('inicio').value;
+      var fin    = document.getElementById('fin').value;
+      var motivo = document.getElementById('motivo').value.trim();
+      var boton  = document.querySelector('.btn-enviar');
+
+      if (!fecha || !inicio || !fin || !motivo) {
+        alert('Completa todos los campos');
+        return;
+      }
+
+      var estado = 'Pendiente';
+      var autorizadoPor = document.getElementById('autorizador').value;
+
+      if (esAdmin === 'si') {
+        estado = 'Aprobada';
+        autorizadoPor = nombre;
+      } else if (!autorizadoPor) {
+        alert('Selecciona quien autorizara la solicitud');
+        return;
+      }
+
+      var hi  = new Date('2000-01-01T' + inicio + ':00');
+      var hf  = new Date('2000-01-01T' + fin + ':00');
+      var dif = (hf - hi) / (1000 * 60 * 60);
+      if (dif < 0) dif += 24;
+      var totalHoras = Math.round(dif * 100) / 100;
+
+      var datos = { fecha: fecha, codigo: codigo, nombre: nombre, inicio: inicio, fin: fin,
+                    totalHoras: totalHoras, motivo: motivo, estado: estado, autorizadoPor: autorizadoPor };
+
+      boton.disabled = true;
+      boton.textContent = 'Enviando...';
+
+      gasCall('guardarSolicitud', datos).then(function(res) {
+        if (res.ok) {
+          alert('Solicitud enviada correctamente');
+          document.getElementById('fecha').value   = '';
+          document.getElementById('inicio').value  = '';
+          document.getElementById('fin').value     = '';
+          document.getElementById('motivo').value  = '';
+          if (esAdmin !== 'si') document.getElementById('autorizador').value = '';
+        } else {
+          alert('Error al enviar: ' + (res.error || 'Intenta de nuevo'));
+        }
+        boton.disabled = false;
+        boton.textContent = 'Enviar Solicitud';
+      });
+    }
+
+    function cerrarSesion() {
+      localStorage.clear();
+      window.location.href = 'index.html';
+    }
+  </script>
+  <script src="logo.js"></script>
+</body>
+</html>

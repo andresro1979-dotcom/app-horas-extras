@@ -1,0 +1,198 @@
+﻿* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #1d4f91, #0b7d84);
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* ── LOGIN ── */
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 20px;
+}
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  background: #f5f5f5;
+  border-radius: 28px;
+  padding: 45px 40px;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.18);
+  text-align: center;
+}
+.logo { width: 80px; margin-bottom: 20px; }
+.login-card h1 { font-size: 26px; color: #111827; margin-bottom: 10px; font-weight: 700; }
+.login-card p  { color: #6b7280; margin-bottom: 24px; font-size: 15px; }
+.login-card label {
+  display: block; text-align: left; font-size: 14px;
+  color: #555; margin-bottom: 8px; margin-top: 18px; font-weight: 600;
+}
+.login-card input {
+  width: 100%; padding: 16px; border: 1px solid #d1d5db;
+  border-radius: 14px; background: #f9fafb; font-size: 16px; margin-bottom: 10px;
+}
+.login-card button {
+  width: 100%; padding: 16px; border: none; border-radius: 14px;
+  background: #1d4f91; color: white; font-size: 18px; font-weight: bold;
+  cursor: pointer; margin-top: 20px;
+}
+.login-card button:active { background: #163d70; }
+.error-msg { color: #dc2626; font-size: 14px; margin-top: 10px; }
+
+.footer-login {
+  margin-top: 30px; border-top: 1px solid #e5e7eb; padding-top: 16px;
+  color: #9ca3af; font-size: 18px; font-family: 'Brush Script MT', cursive;
+  font-style: italic; opacity: 0.8;
+}
+
+/* ── PANEL ── */
+.panel { padding: 20px; }
+.panel > h1 { color: white; font-size: 32px; margin-bottom: 24px; font-weight: 800; }
+
+.top-bar {
+  display: flex; justify-content: space-between;
+  align-items: center; gap: 12px; margin-bottom: 24px;
+}
+.top-right {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 8px; flex-shrink: 0;
+}
+.logo-top { width: 60px; height: 60px; object-fit: contain; display: block; }
+.logo-container { display: flex; flex-direction: column; align-items: center; }
+
+.cerrar-btn {
+  background: #374151; color: white; border: none;
+  padding: 10px 14px; border-radius: 12px; cursor: pointer; font-size: 13px;
+}
+.btn-resumen {
+  background: #1d4f91; color: white; border: none;
+  padding: 10px 14px; border-radius: 12px; cursor: pointer; font-size: 13px; font-weight: 600;
+}
+
+/* ── CARD SOLICITUD (form) ── */
+.card-solicitud {
+  background: linear-gradient(145deg, rgba(15,40,90,0.95), rgba(22,58,120,0.95));
+  border-radius: 20px; padding: 22px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.2);
+  border: 1px solid rgba(255,255,255,0.08);
+  margin-bottom: 20px;
+}
+.card-solicitud h2 {
+  color: white; font-size: 20px; margin-bottom: 18px;
+  border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 14px;
+}
+.form-grid {
+  display: flex; flex-direction: column; gap: 12px;
+}
+.form-grid input,
+.form-grid textarea,
+.form-grid select {
+  width: 100%; background: rgba(8,20,50,0.7);
+  border: 1px solid rgba(255,255,255,0.15); color: white;
+  padding: 14px 16px; border-radius: 12px; font-size: 16px;
+}
+.form-grid input::placeholder,
+.form-grid textarea::placeholder { color: rgba(255,255,255,0.6); }
+.form-grid textarea { resize: none; height: 80px; }
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
+
+.select-autorizador {
+  width: 100%; background: #0b1f57; color: white;
+  border: 1px solid rgba(255,255,255,0.15);
+  padding: 14px 16px; border-radius: 12px; font-size: 16px;
+  height: auto; outline: none;
+}
+.btn-enviar {
+  width: 100%; background: linear-gradient(135deg, #2f6df6, #2152c4);
+  color: white; border: none; padding: 16px;
+  border-radius: 12px; font-size: 17px; font-weight: bold; cursor: pointer;
+}
+.btn-enviar:active { opacity: 0.85; }
+
+/* ── ADMIN GRID ── */
+.admin-grid { display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px; }
+.seccion-titulo { color: white; font-size: 22px; margin: 0 0 16px; }
+
+/* ── SOLICITUD CARDS ── */
+.solicitud-card {
+  background: white; border-radius: 20px; padding: 20px;
+  margin-bottom: 16px; box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+.pendiente  { border-left: 6px solid #f59e0b; }
+.aprobada   { border-left: 6px solid #22c55e; }
+.rechazada  { border-left: 6px solid #ef4444; }
+
+.solicitud-header {
+  display: flex; justify-content: space-between;
+  align-items: flex-start; gap: 10px; margin-bottom: 16px; flex-wrap: wrap;
+}
+.solicitud-header h2 { color: #17365d; font-size: 18px; }
+.solicitud-info p { margin-bottom: 8px; color: #374151; font-size: 15px; }
+
+.estado {
+  padding: 6px 12px; border-radius: 20px;
+  font-size: 13px; font-weight: 700; display: inline-block; white-space: nowrap;
+}
+.pendiente-texto  { background: #fff3cd; color: #b7791f; }
+.aprobada-texto   { background: #c6f6d5; color: #276749; }
+.rechazada-texto  { background: #fed7d7; color: #c53030; }
+
+.acciones { display: flex; gap: 10px; margin-top: 16px; }
+.btn-aprobar {
+  flex: 1; background: #22c55e; color: white; border: none;
+  padding: 14px; border-radius: 12px; font-size: 15px; font-weight: bold; cursor: pointer;
+}
+.btn-rechazar {
+  flex: 1; background: #ef4444; color: white; border: none;
+  padding: 14px; border-radius: 12px; font-size: 15px; font-weight: bold; cursor: pointer;
+}
+
+.sin-solicitudes {
+  text-align: center; color: white; font-size: 18px; margin-top: 40px; opacity: 0.8;
+}
+
+/* ── MODAL RESUMEN ── */
+.oculto { display: none !important; }
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+  display: flex; justify-content: center; align-items: flex-end;
+  z-index: 1000;
+}
+.modal-resumen {
+  background: white; border-radius: 24px 24px 0 0; padding: 24px;
+  width: 100%; max-height: 75vh; overflow-y: auto;
+  box-shadow: 0 -10px 40px rgba(0,0,0,0.2);
+}
+.modal-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 20px; border-bottom: 1px solid #e5e7eb; padding-bottom: 14px;
+}
+.modal-header h2 { color: #17365d; font-size: 20px; }
+.btn-cerrar-modal {
+  background: #f3f4f6; border: none; border-radius: 50%;
+  width: 36px; height: 36px; font-size: 16px; cursor: pointer; color: #374151;
+}
+.resumen-item {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 13px 0; border-bottom: 1px solid #f3f4f6;
+}
+.resumen-item:last-child { border-bottom: none; }
+.resumen-nombre { color: #111827; font-size: 15px; font-weight: 500; }
+.sin-datos { text-align: center; color: #6b7280; padding: 20px 0; }
+
+/* ── DESKTOP ── */
+@media (min-width: 768px) {
+  .panel { padding: 30px; }
+  .panel > h1 { font-size: 48px; margin-bottom: 40px; }
+  .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 2fr auto; gap: 14px; align-items: center; }
+  .form-grid .btn-enviar { width: auto; }
+  .modal-overlay { align-items: center; }
+  .modal-resumen { border-radius: 24px; max-width: 480px; width: 90%; }
+}

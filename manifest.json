@@ -1,0 +1,19 @@
+{
+  "name": "Registro de Horas Extras",
+  "short_name": "Horas Extras",
+  "description": "Registro y aprobacion de horas extras",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "background_color": "#1d4f91",
+  "theme_color": "#1d4f91",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

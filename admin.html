@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#1d4f91">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="manifest" href="manifest.json">
+  <title>Panel Administrador</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="panel">
+    <div class="top-bar">
+      <h1>Panel Administrador</h1>
+      <div class="top-right">
+        <div class="logo-container">
+          <img src="" data-logo alt="Logo" class="logo-top">
+        </div>
+        <button class="btn-resumen" onclick="mostrarResumen()">Ver Resumen</button>
+        <button class="cerrar-btn" onclick="cerrarSesion()">Cerrar Sesion</button>
+      </div>
+    </div>
+
+    <div class="admin-grid">
+      <section class="card-solicitud admin-tool">
+        <h2>Crear Solicitud</h2>
+        <div class="form-grid admin-form-grid">
+          <select id="adminFuncionario" class="select-autorizador">
+            <option value="">Seleccionar funcionario</option>
+          </select>
+          <input type="date" id="adminFecha">
+          <input type="time" id="adminInicio">
+          <input type="time" id="adminFin">
+          <textarea id="adminMotivo" placeholder="Motivo"></textarea>
+          <button class="btn-enviar" onclick="crearSolicitudAdmin()">Crear</button>
+        </div>
+      </section>
+
+      <section class="card-solicitud admin-tool">
+        <h2>Crear Usuario</h2>
+        <div class="form-grid admin-form-grid usuario-form-grid">
+          <input type="text" id="nuevoCodigo" placeholder="Codigo">
+          <input type="password" id="nuevaClave" placeholder="Contrasena">
+          <input type="text" id="nuevoNombre" placeholder="Nombre completo">
+          <select id="nuevoRol" class="select-autorizador">
+            <option value="Usuario">Usuario</option>
+            <option value="Admin">Administrador</option>
+          </select>
+          <button class="btn-enviar" onclick="crearUsuario()">Guardar Usuario</button>
+        </div>
+      </section>
+    </div>
+
+    <h2 class="seccion-titulo">Solicitudes Pendientes</h2>
+    <div id="contenedorSolicitudes"></div>
+  </div>
+
+  <div id="modalResumen" class="modal-overlay oculto" onclick="cerrarResumenFuera(event)">
+    <div class="modal-resumen">
+      <div class="modal-header">
+        <h2>Resumen del Mes</h2>
+        <button class="btn-cerrar-modal" onclick="cerrarResumen()">&#x2715;</button>
+      </div>
+      <div id="listaResumen"></div>
+    </div>
+  </div>
+
+  <script src="api.js"></script>
+  <script>
+    var nombreAdmin = localStorage.getItem('nombreUsuario');
+    var codigoAdmin = localStorage.getItem('codigoUsuario');
+    var esAdmin     = localStorage.getItem('esAdmin');
+    var usuarios    = [];
+    var todasLasSolicitudes = [];
+
+    if (!nombreAdmin || esAdmin !== 'si') {
+      window.location.href = 'index.html';
+    }
+
+    function iniciar() {
+      cargarUsuarios();
+      cargarSolicitudes();
+    }
+
+    function cargarUsuarios() {
+      gasCall('usuarios').then(function(data) {
+        if (!Array.isArray(data)) return;
+        usuarios = data;
+        renderizarSelectFuncionarios();
+      });
+    }
+
+    function renderizarSelectFuncionarios() {
+      var select = document.getElementById('adminFuncionario');
+      select.innerHTML = '<option value="">Seleccionar funcionario</option>';
+      usuarios.filter(function(u) { return u.rol !== 'Admin'; }).forEach(function(u) {
+        var opt = document.createElement('option');
+        opt.value = u.codigo;
+        opt.textContent = u.nombre + ' - ' + u.codigo;
+        select.appendChild(opt);
+      });
+    }
+
+    function crearUsuario() {
+      var codigo = document.getElementById('nuevoCodigo').value.trim();
+      var clave  = document.getElementById('nuevaClave').value.trim();
+      var nombre = document.getElementById('nuevoNombre').value.trim();
+      var rol    = document.getElementById('nuevoRol').value;
+
+      if (!codigo || !clave || !nombre) { alert('Completa codigo, contrasena y nombre'); return; }
+
+      gasCall('guardarUsuario', { codigo: codigo, clave: clave, nombre: nombre, rol: rol }).then(function(res) {
+        if (res.ok) {
+          alert('Usuario guardado correctamente');
+          document.getElementById('nuevoCodigo').value = '';
+          document.getElementById('nuevaClave').value  = '';
+          document.getElementById('nuevoNombre').value = '';
+          document.getElementById('nuevoRol').value    = 'Usuario';
+          cargarUsuarios();
+        } else {
+          alert('Error al guardar usuario: ' + (res.error || ''));
+        }
+      });
+    }
+
+    function crearSolicitudAdmin() {
+      var codigoFuncionario = document.getElementById('adminFuncionario').value;
+      var funcionario = usuarios.find(function(u) { return String(u.codigo) === String(codigoFuncionario); });
+      var fecha  = document.getElementById('adminFecha').value;
+      var inicio = document.getElementById('adminInicio').value;
+      var fin    = document.getElementById('adminFin').value;
+      var motivo = document.getElementById('adminMotivo').value.trim();
+
+      if (!funcionario || !fecha || !inicio || !fin || !motivo) {
+        alert('Completa todos los datos de la solicitud');
+        return;
+      }
+
+      var hi  = new Date('2000-01-01T' + inicio + ':00');
+      var hf  = new Date('2000-01-01T' + fin + ':00');
+      var dif = (hf - hi) / (1000 * 60 * 60);
+      if (dif < 0) dif += 24;
+      var totalHoras = Math.round(dif * 100) / 100;
+
+      var datos = { fecha: fecha, codigo: funcionario.codigo, nombre: funcionario.nombre,
+                    inicio: inicio, fin: fin, totalHoras: totalHoras, motivo: motivo,
+                    estado: 'Aprobada', autorizadoPor: nombreAdmin };
+
+      gasCall('guardarSolicitud', datos).then(function(res) {
+        if (res.ok) {
+          alert('Solicitud creada y aprobada correctamente');
+          document.getElementById('adminFuncionario').value = '';
+          document.getElementById('adminFecha').value  = '';
+          document.getElementById('adminInicio').value = '';
+          document.getElementById('adminFin').value    = '';
+          document.getElementById('adminMotivo').value = '';
+          cargarSolicitudes();
+        } else {
+          alert('Error al crear solicitud: ' + (res.error || ''));
+        }
+      });
+    }
+
+    function cargarSolicitudes() {
+      var cont = document.getElementById('contenedorSolicitudes');
+      cont.innerHTML = '<div class="sin-solicitudes">Cargando...</div>';
+      gasCall('solicitudes').then(function(data) {
+        renderizarSolicitudes(Array.isArray(data) ? data : []);
+      });
+    }
+
+    function renderizarSolicitudes(data) {
+      var contenedor = document.getElementById('contenedorSolicitudes');
+      contenedor.innerHTML = '';
+
+      var hoy = new Date();
+      var mes = hoy.getMonth();
+      var anio = hoy.getFullYear();
+
+      todasLasSolicitudes = data.filter(function(item) {
+        var f = crearFechaLocal(item.fecha);
+        return item.autorizadoPor === nombreAdmin && f && f.getMonth() === mes && f.getFullYear() === anio;
+      });
+
+      var pendientes = todasLasSolicitudes.filter(function(item) { return item.estado === 'Pendiente'; });
+
+      if (pendientes.length === 0) {
+        contenedor.innerHTML = '<div class="sin-solicitudes">No hay solicitudes pendientes para aprobar</div>';
+        return;
+      }
+
+      pendientes.forEach(function(s) {
+        var card = document.createElement('div');
+        card.className = 'solicitud-card pendiente';
+        card.id = 'card-' + s.id;
+        card.innerHTML =
+          '<div class="solicitud-header">' +
+            '<h2>' + s.nombre + '</h2>' +
+            '<span class="estado pendiente-texto">' + s.estado + '</span>' +
+          '</div>' +
+          '<div class="solicitud-info">' +
+            '<p><strong>Fecha:</strong> ' + formatearFecha(s.fecha) + '</p>' +
+            '<p><strong>Hora Inicio:</strong> ' + formatearHora(s.inicio) + '</p>' +
+            '<p><strong>Hora Termino:</strong> ' + formatearHora(s.fin) + '</p>' +
+            '<p><strong>Total Horas:</strong> ' + s.totalHoras + '</p>' +
+            '<p><strong>Motivo:</strong> ' + s.motivo + '</p>' +
+            '<p><strong>Autorizado Por:</strong> ' + s.autorizadoPor + '</p>' +
+          '</div>' +
+          '<div class="acciones">' +
+            '<button class="btn-aprobar" onclick="aprobarSolicitud(\'' + s.id + '\', this)">&#10003; Aprobar</button>' +
+            '<button class="btn-rechazar" onclick="rechazarSolicitud(\'' + s.id + '\', this)">&#10007; Rechazar</button>' +
+          '</div>';
+        contenedor.appendChild(card);
+      });
+    }
+
+    function aprobarSolicitud(id, btn) {
+      if (!confirm('Aprobar esta solicitud de horas extras?')) return;
+      cambiarEstado(id, 'Aprobada', btn);
+    }
+
+    function rechazarSolicitud(id, btn) {
+      if (!confirm('Rechazar esta solicitud de horas extras?')) return;
+      cambiarEstado(id, 'Rechazada', btn);
+    }
+
+    function cambiarEstado(id, estado, btn) {
+      var acciones = btn.closest('.acciones');
+      var botones  = acciones.querySelectorAll('button');
+      botones.forEach(function(b) { b.disabled = true; });
+      btn.textContent = estado === 'Aprobada' ? 'Aprobando...' : 'Rechazando...';
+
+      gasCall('cambiarEstado', { id: id, estado: estado }).then(function(res) {
+        if (res.ok) {
+          var card = btn.closest('.solicitud-card');
+          card.querySelector('.estado').textContent = estado;
+          card.querySelector('.estado').className = 'estado ' + (estado === 'Aprobada' ? 'aprobada-texto' : 'rechazada-texto');
+          card.className = 'solicitud-card ' + (estado === 'Aprobada' ? 'aprobada' : 'rechazada');
+          setTimeout(function() { card.remove(); }, 1000);
+        } else {
+          alert('Error al actualizar. Intenta de nuevo.');
+          botones.forEach(function(b) { b.disabled = false; });
+          btn.textContent = estado === 'Aprobada' ? '✓ Aprobar' : '✗ Rechazar';
+        }
+      });
+    }
+
+    function mostrarResumen() {
+      gasCall('solicitudes').then(function(data) {
+        renderizarResumen(Array.isArray(data) ? data : []);
+        document.getElementById('modalResumen').classList.remove('oculto');
+      });
+    }
+
+    function renderizarResumen(data) {
+      var hoy = new Date();
+      var mes = hoy.getMonth();
+      var anio = hoy.getFullYear();
+
+      var filtrados = data.filter(function(item) {
+        var f = crearFechaLocal(item.fecha);
+        return item.autorizadoPor === nombreAdmin && f && f.getMonth() === mes && f.getFullYear() === anio;
+      });
+
+      var lista = document.getElementById('listaResumen');
+      lista.innerHTML = '';
+
+      if (filtrados.length === 0) {
+        lista.innerHTML = '<p class="sin-datos">Sin solicitudes este mes</p>';
+        return;
+      }
+
+      filtrados.forEach(function(s) {
+        var clase = s.estado === 'Pendiente' ? 'pendiente-texto' : s.estado === 'Aprobada' ? 'aprobada-texto' : 'rechazada-texto';
+        var item = document.createElement('div');
+        item.className = 'resumen-item';
+        item.innerHTML = '<span class="resumen-nombre">' + s.nombre + '</span><span class="estado ' + clase + '">' + s.estado + '</span>';
+        lista.appendChild(item);
+      });
+    }
+
+    function cerrarResumen() { document.getElementById('modalResumen').classList.add('oculto'); }
+    function cerrarResumenFuera(e) { if (e.target === document.getElementById('modalResumen')) cerrarResumen(); }
+
+    function cerrarSesion() {
+      localStorage.clear();
+      window.location.href = 'index.html';
+    }
+
+    function crearFechaLocal(fecha) {
+      if (!fecha) return null;
+      var str = String(fecha);
+      var m = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (m) return new Date(+m[1], +m[2] - 1, +m[3]);
+      var d = new Date(str);
+      return isNaN(d.getTime()) ? null : d;
+    }
+
+    function formatearFecha(fecha) {
+      if (!fecha) return '';
+      var str = String(fecha);
+      var m = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (m) return m[3] + '-' + m[2] + '-' + m[1];
+      var d = new Date(str);
+      if (!isNaN(d.getTime())) return ('0' + d.getDate()).slice(-2) + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + d.getFullYear();
+      return str;
+    }
+
+    function formatearHora(hora) {
+      if (!hora) return '';
+      var str = String(hora);
+      if (/^\d{1,2}:\d{2}$/.test(str)) return str;
+      var iso = str.match(/T(\d{2}):(\d{2})/);
+      if (iso) return iso[1] + ':' + iso[2];
+      if (!isNaN(str) && str.includes('.')) {
+        var min = Math.round(parseFloat(str) * 24 * 60);
+        return ('0' + Math.floor(min / 60) % 24).slice(-2) + ':' + ('0' + min % 60).slice(-2);
+      }
+      return str;
+    }
+
+    iniciar();
+  </script>
+  <script src="logo.js"></script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#1d4f91" rx="80"/>
+  <circle cx="256" cy="256" r="165" fill="none" stroke="white" stroke-width="22"/>
+  <line x1="256" y1="256" x2="256" y2="130" stroke="white" stroke-width="18" stroke-linecap="round"/>
+  <line x1="256" y1="256" x2="330" y2="290" stroke="white" stroke-width="18" stroke-linecap="round"/>
+  <circle cx="256" cy="256" r="12" fill="white"/>
+  <text x="256" y="430" font-family="Arial,sans-serif" font-size="72" font-weight="bold" text-anchor="middle" fill="white">HE</text>
+</svg>

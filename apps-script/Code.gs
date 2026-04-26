@@ -1,10 +1,22 @@
-﻿function doGet(e) {
-  if (e && e.parameter && e.parameter.accion) {
-    return responderJson(ejecutarAccionApi_(e.parameter));
+var SPREADSHEET_ID = '1HLGTscsXPOkfb5crnzE4MzoZqRm5v2zTjV0_BzBVrBs';
+
+function doGet(e) {
+  var params = (e && e.parameter) || {};
+
+  if (params.accion) {
+    try {
+      var datos = params.datos ? JSON.parse(params.datos) : {};
+      return responderJson(manejarAccion_(params.accion, datos));
+    } catch (err) {
+      return responderJson({ ok: false, error: err.message });
+    }
   }
-  const page = (e && e.parameter && e.parameter.page) || 'index';
-  const allowedPages = ['index', 'trabajador', 'admin'];
-  const template = HtmlService.createTemplateFromFile(allowedPages.includes(page) ? page : 'index');
+
+  var page = params.page || 'index';
+  var allowedPages = ['index', 'trabajador', 'admin'];
+  var template = HtmlService.createTemplateFromFile(
+    allowedPages.indexOf(page) >= 0 ? page : 'index'
+  );
   return template
     .evaluate()
     .setTitle('Registro de Horas Extras')
@@ -12,8 +24,27 @@
 }
 
 function doPost(e) {
-  const datos = JSON.parse((e && e.postData && e.postData.contents) || '{}');
-  return responderJson(guardarSolicitud(datos));
+  try {
+    var body = JSON.parse((e && e.postData && e.postData.contents) || '{}');
+    return responderJson(manejarAccion_(body.accion, body.datos || body));
+  } catch (err) {
+    return responderJson({ ok: false, error: err.message });
+  }
+}
+
+function manejarAccion_(accion, datos) {
+  switch (accion) {
+    case 'login':          return validarLogin(datos.codigo, datos.clave);
+    case 'solicitudes':    return listarSolicitudes();
+    case 'usuarios':       return listarUsuarios();
+    case 'administradores':return listarAdministradores();
+    case 'guardarSolicitud': return guardarSolicitud(datos);
+    case 'guardarUsuario':   return guardarUsuario(datos);
+    case 'cambiarEstado':    return cambiarEstadoSolicitud(datos.id, datos.estado);
+    case 'aprobar':          return cambiarEstadoSolicitud(datos.id, 'Aprobada');
+    case 'rechazar':         return cambiarEstadoSolicitud(datos.id, 'Rechazada');
+    default: return { ok: false, error: 'Accion no reconocida: ' + accion };
+  }
 }
 
 function include(filename) {
@@ -25,58 +56,53 @@ function getAppUrl() {
 }
 
 function listarSolicitudes() {
-  const sheet = obtenerHojaSolicitudes_();
-  const values = sheet.getDataRange().getValues();
+  var sheet = obtenerHojaSolicitudes_();
+  var values = sheet.getDataRange().getValues();
   if (values.length <= 1) return [];
-  const headers = values[0];
+  var headers = values[0];
   return values.slice(1)
-    .filter(row => row.some(value => value !== ''))
-    .map(row => convertirFilaAObjeto_(headers, row));
+    .filter(function(row) { return row.some(function(v) { return v !== ''; }); })
+    .map(function(row) { return convertirFilaAObjeto_(headers, row); });
 }
 
 function listarUsuarios() {
-  const sheet = obtenerHojaUsuarios_();
-  const values = sheet.getDataRange().getValues();
+  var sheet = obtenerHojaUsuarios_();
+  var values = sheet.getDataRange().getValues();
   if (values.length <= 1) return [];
-  const headers = values[0];
+  var headers = values[0];
   return values.slice(1)
-    .filter(row => row.some(value => value !== ''))
-    .map(row => convertirFilaAObjeto_(headers, row))
-    .filter(usuario => usuario.activo !== false && String(usuario.activo).toLowerCase() !== 'false');
+    .filter(function(row) { return row.some(function(v) { return v !== ''; }); })
+    .map(function(row) { return convertirFilaAObjeto_(headers, row); })
+    .filter(function(u) { return u.activo !== false && String(u.activo).toLowerCase() !== 'false'; });
 }
 
 function listarAdministradores() {
-  return listarUsuarios().filter(usuario => usuario.rol === 'Admin');
+  return listarUsuarios().filter(function(u) { return u.rol === 'Admin'; });
 }
 
 function validarLogin(codigo, clave) {
-  const usuario = listarUsuarios().find(item =>
-    String(item.codigo) === String(codigo) &&
-    String(item.clave) === String(clave)
-  );
+  var usuario = listarUsuarios().find(function(item) {
+    return String(item.codigo) === String(codigo) && String(item.clave) === String(clave);
+  });
   if (!usuario) return { ok: false };
   return {
     ok: true,
-    usuario: {
-      codigo: String(usuario.codigo),
-      nombre: usuario.nombre,
-      rol: usuario.rol
-    }
+    usuario: { codigo: String(usuario.codigo), nombre: usuario.nombre, rol: usuario.rol }
   };
 }
 
 function guardarUsuario(datos) {
-  const codigo = String(datos.codigo || '').trim();
-  const clave  = String(datos.clave  || '').trim();
-  const nombre = String(datos.nombre || '').trim();
-  const rol    = datos.rol === 'Admin' ? 'Admin' : 'Usuario';
+  var codigo = String(datos.codigo || '').trim();
+  var clave  = String(datos.clave  || '').trim();
+  var nombre = String(datos.nombre || '').trim();
+  var rol    = datos.rol === 'Admin' ? 'Admin' : 'Usuario';
 
   if (!codigo || !clave || !nombre) throw new Error('Codigo, clave y nombre son obligatorios.');
 
-  const sheet  = obtenerHojaUsuarios_();
-  const values = sheet.getDataRange().getValues();
+  var sheet  = obtenerHojaUsuarios_();
+  var values = sheet.getDataRange().getValues();
 
-  for (let i = 1; i < values.length; i++) {
+  for (var i = 1; i < values.length; i++) {
     if (String(values[i][0]) === codigo) {
       sheet.getRange(i + 1, 2, 1, 4).setValues([[clave, nombre, rol, true]]);
       return { ok: true, actualizado: true };
@@ -87,9 +113,8 @@ function guardarUsuario(datos) {
   return { ok: true, actualizado: false };
 }
 
-// Ejecuta esta funcion UNA SOLA VEZ desde el editor para cargar los usuarios nuevos
 function cargarUsuariosNuevos() {
-  const nuevos = [
+  var nuevos = [
     { codigo: '17', clave: '1017', nombre: 'Christian Figueroa',      rol: 'Usuario' },
     { codigo: '18', clave: '1018', nombre: 'Cesar Davila',             rol: 'Usuario' },
     { codigo: '19', clave: '1019', nombre: 'Pablo Zapata',             rol: 'Usuario' },
@@ -100,61 +125,51 @@ function cargarUsuariosNuevos() {
     { codigo: '24', clave: '1024', nombre: 'Yasmin',                   rol: 'Usuario' },
     { codigo: '25', clave: '1025', nombre: 'Jorge Toro',               rol: 'Admin'   }
   ];
-
-  nuevos.forEach(u => guardarUsuario(u));
+  nuevos.forEach(function(u) { guardarUsuario(u); });
   Logger.log('Usuarios cargados: ' + nuevos.length);
 }
 
 function guardarSolicitud(datos) {
   validarSolicitud_(datos);
-  const sheet  = obtenerHojaSolicitudes_();
-  const id     = Utilities.getUuid();
-  const creado = new Date();
-  const estado = datos.estado || 'Pendiente';
+  var sheet  = obtenerHojaSolicitudes_();
+  var id     = Utilities.getUuid();
+  var creado = new Date();
+  var estado = datos.estado || 'Pendiente';
 
   sheet.appendRow([id, datos.fecha, datos.codigo, datos.nombre, datos.inicio, datos.fin,
     Number(datos.totalHoras), datos.motivo, estado, datos.autorizadoPor, creado]);
 
   if (estado === 'Aprobada') {
     registrarAprobacionEnControl_({
-      id, fecha: datos.fecha, codigo: datos.codigo, nombre: datos.nombre,
+      id: id, fecha: datos.fecha, codigo: datos.codigo, nombre: datos.nombre,
       totalHoras: datos.totalHoras, aprobadoPor: datos.autorizadoPor, fechaAprobacion: creado
     });
   }
-  return { ok: true, id };
+  return { ok: true, id: id };
 }
 
 function cambiarEstadoSolicitud(id, estado) {
   if (!id) throw new Error('Falta el ID de la solicitud.');
-  if (!['Aprobada', 'Rechazada', 'Pendiente'].includes(estado)) throw new Error('Estado no valido.');
+  if (['Aprobada', 'Rechazada', 'Pendiente'].indexOf(estado) < 0) throw new Error('Estado no valido.');
 
-  const sheet   = obtenerHojaSolicitudes_();
-  const values  = sheet.getDataRange().getValues();
-  const headers = values[0];
+  var sheet   = obtenerHojaSolicitudes_();
+  var values  = sheet.getDataRange().getValues();
+  var headers = values[0];
 
-  for (let i = 1; i < values.length; i++) {
+  for (var i = 1; i < values.length; i++) {
     if (String(values[i][0]) === String(id)) {
       sheet.getRange(i + 1, 9).setValue(estado);
       if (estado === 'Aprobada') {
-        const fila = convertirFilaAObjeto_(headers, values[i]);
+        var fila = convertirFilaAObjeto_(headers, values[i]);
         registrarAprobacionEnControl_({
           id: fila.id, fecha: fila.fecha, codigo: fila.codigo, nombre: fila.nombre,
           totalHoras: fila.totalHoras, aprobadoPor: fila.autorizadoPor, fechaAprobacion: new Date()
         });
       }
-      return { ok: true, id, estado };
+      return { ok: true, id: id, estado: estado };
     }
   }
   throw new Error('No se encontro la solicitud.');
-}
-
-function aprobarSolicitud(id)  { return cambiarEstadoSolicitud(id, 'Aprobada');  }
-function rechazarSolicitud(id) { return cambiarEstadoSolicitud(id, 'Rechazada'); }
-
-function ejecutarAccionApi_(params) {
-  if (params.accion === 'aprobar')  return aprobarSolicitud(params.id);
-  if (params.accion === 'rechazar') return rechazarSolicitud(params.id);
-  return { ok: false, error: 'Accion no reconocida.' };
 }
 
 function responderJson(data) {
@@ -163,8 +178,8 @@ function responderJson(data) {
 }
 
 function obtenerHojaSolicitudes_() {
-  const ss = SpreadsheetApp.openById(obtenerSpreadsheetId_());
-  let sheet = ss.getSheetByName('Solicitudes');
+  var ss    = SpreadsheetApp.openById(SPREADSHEET_ID);
+  var sheet = ss.getSheetByName('Solicitudes');
   if (!sheet) sheet = ss.insertSheet('Solicitudes');
   if (sheet.getLastRow() === 0)
     sheet.appendRow(['id','fecha','codigo','nombre','inicio','fin','totalHoras','motivo','estado','autorizadoPor','creado']);
@@ -172,8 +187,8 @@ function obtenerHojaSolicitudes_() {
 }
 
 function obtenerHojaControl_() {
-  const ss = SpreadsheetApp.openById(obtenerSpreadsheetId_());
-  let sheet = ss.getSheetByName('Control de Horas Extras');
+  var ss    = SpreadsheetApp.openById(SPREADSHEET_ID);
+  var sheet = ss.getSheetByName('Control de Horas Extras');
   if (!sheet) sheet = ss.insertSheet('Control de Horas Extras');
   if (sheet.getLastRow() === 0)
     sheet.appendRow(['id_solicitud','fecha_solicitud','codigo_trabajador','nombre_trabajador','total_horas','aprobado_por','fecha_aprobacion']);
@@ -188,12 +203,14 @@ function registrarAprobacionEnControl_(datos) {
 }
 
 function obtenerHojaUsuarios_() {
-  const ss = SpreadsheetApp.openById(obtenerSpreadsheetId_());
-  let sheet = ss.getSheetByName('Usuarios');
+  var ss    = SpreadsheetApp.openById(SPREADSHEET_ID);
+  var sheet = ss.getSheetByName('Usuarios');
   if (!sheet) sheet = ss.insertSheet('Usuarios');
   if (sheet.getLastRow() === 0) {
     sheet.appendRow(['codigo','clave','nombre','rol','activo']);
-    usuariosIniciales_().forEach(u => sheet.appendRow([u.codigo, u.clave, u.nombre, u.rol, true]));
+    usuariosIniciales_().forEach(function(u) {
+      sheet.appendRow([u.codigo, u.clave, u.nombre, u.rol, true]);
+    });
   }
   return sheet;
 }
@@ -219,19 +236,8 @@ function usuariosIniciales_() {
   ];
 }
 
-function obtenerSpreadsheetId_() {
-  const props = PropertiesService.getScriptProperties();
-  let spreadsheetId = props.getProperty('SPREADSHEET_ID');
-  if (!spreadsheetId) {
-    const ss = SpreadsheetApp.create('Horas Extras - Datos');
-    spreadsheetId = ss.getId();
-    props.setProperty('SPREADSHEET_ID', spreadsheetId);
-  }
-  return spreadsheetId;
-}
-
 function convertirFilaAObjeto_(headers, row) {
-  return headers.reduce((obj, header, index) => {
+  return headers.reduce(function(obj, header, index) {
     obj[header] = normalizarValor_(row[index]);
     return obj;
   }, {});
@@ -244,7 +250,9 @@ function normalizarValor_(value) {
 }
 
 function validarSolicitud_(datos) {
-  const requeridos = ['fecha','codigo','nombre','inicio','fin','totalHoras','motivo','estado','autorizadoPor'];
-  const faltantes  = requeridos.filter(c => datos[c] === undefined || datos[c] === null || datos[c] === '');
+  var requeridos = ['fecha','codigo','nombre','inicio','fin','totalHoras','motivo','estado','autorizadoPor'];
+  var faltantes  = requeridos.filter(function(c) {
+    return datos[c] === undefined || datos[c] === null || datos[c] === '';
+  });
   if (faltantes.length > 0) throw new Error('Faltan campos: ' + faltantes.join(', '));
 }
