@@ -10,71 +10,23 @@
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon.svg">
   <title>Horas Extras</title>
-  <link rel="stylesheet" href="styles.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; height: 100dvh; overflow: hidden; background: #1d4f91; }
+    iframe { width: 100%; height: 100%; height: 100dvh; border: none; display: block; }
+  </style>
 </head>
 <body>
-  <div class="login-container">
-    <div class="login-card">
-      <img src="" data-logo alt="Logo" class="logo">
-      <h1>Horas Extras</h1>
-      <p class="subtitulo">Ingresa tus credenciales</p>
-      <div class="form-login">
-        <input type="text" id="codigo" placeholder="Codigo" inputmode="numeric" autocomplete="username">
-        <input type="password" id="clave" placeholder="Contrasena" autocomplete="current-password">
-        <button class="btn-ingresar" id="btnLogin" onclick="login()">Ingresar</button>
-      </div>
-      <p id="errorMsg" class="error-msg" style="display:none">Codigo o contrasena incorrectos</p>
-    </div>
-  </div>
-
-  <script src="api.js"></script>
+  <iframe
+    id="app"
+    src="https://script.google.com/macros/s/AKfycbxZKVTC6AgKID-dkz77jaF_w_q5BWnaStFhvPoN8noTmHBRq6C8oGaPlhRJakFLn512/exec"
+    allowfullscreen
+    allow="fullscreen">
+  </iframe>
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js');
     }
-
-    document.getElementById('clave').addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') login();
-    });
-
-    function login() {
-      var codigo = document.getElementById('codigo').value.trim();
-      var clave  = document.getElementById('clave').value.trim();
-      var btn    = document.getElementById('btnLogin');
-      var err    = document.getElementById('errorMsg');
-
-      if (!codigo || !clave) {
-        err.style.display = 'block';
-        err.textContent = 'Completa ambos campos';
-        return;
-      }
-
-      btn.disabled = true;
-      btn.textContent = 'Verificando...';
-      err.style.display = 'none';
-
-      gasCall('login', { codigo: codigo, clave: clave }).then(function(res) {
-        if (res.ok) {
-          localStorage.setItem('nombreUsuario', res.usuario.nombre);
-          localStorage.setItem('rolUsuario',    res.usuario.rol);
-          localStorage.setItem('codigoUsuario', res.usuario.codigo);
-          localStorage.setItem('esAdmin',       res.usuario.rol === 'Admin' ? 'si' : 'no');
-          window.location.href = res.usuario.rol === 'Admin' ? 'admin.html' : 'trabajador.html';
-        } else {
-          err.style.display = 'block';
-          if (res.error === 'timeout' || res.error === 'red') {
-            err.textContent = 'Sin conexion al servidor. Verifica tu internet e intenta de nuevo.';
-          } else if (res.debug === 0) {
-            err.textContent = 'Sin usuarios en el sistema. Abre la URL de reinicio.';
-          } else {
-            err.textContent = 'Codigo o contrasena incorrectos (' + res.debug + ' usuarios en sistema)';
-          }
-          btn.disabled = false;
-          btn.textContent = 'Ingresar';
-        }
-      });
-    }
   </script>
-  <script src="logo.js"></script>
 </body>
 </html>

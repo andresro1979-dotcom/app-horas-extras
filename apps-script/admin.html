@@ -73,7 +73,7 @@
   <script>
     function cerrarSesion() {
       localStorage.clear();
-      window.top.location.href = APP_URL + '?t=' + Date.now();
+      window.location.href = APP_URL + '?t=' + Date.now();
     }
     function cerrarResumenFuera(event) {
       if (event.target === document.getElementById('modalResumen')) {
