@@ -4,9 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Panel Administrador</title>
-  <?!= include('styles'); ?>
   <script>const APP_URL = '<?!= getAppUrl(); ?>';</script>
-  <?!= include('logo_data'); ?>
+  <?!= include('styles'); ?>
 </head>
 <body>
 
@@ -14,7 +13,6 @@
 
     <div class="top-bar">
       <h1>Panel Administrador</h1>
-
       <div class="top-right">
         <div class="logo-container">
           <img src="" data-logo alt="Logo" class="logo-top">
@@ -35,7 +33,7 @@
           <input type="time" id="adminInicio">
           <input type="time" id="adminFin">
           <textarea id="adminMotivo" placeholder="Motivo"></textarea>
-          <button class="btn-enviar" onclick="crearSolicitudAdmin()">Crear y Aprobar</button>
+          <button class="btn-enviar" onclick="crearSolicitudAdmin()">Crear</button>
         </div>
       </section>
 
@@ -43,7 +41,7 @@
         <h2>Crear Usuario</h2>
         <div class="form-grid admin-form-grid usuario-form-grid">
           <input type="text" id="nuevoCodigo" placeholder="Codigo">
-          <input type="password" id="nuevaClave" placeholder="Contraseña">
+          <input type="password" id="nuevaClave" placeholder="Contrasena">
           <input type="text" id="nuevoNombre" placeholder="Nombre completo">
           <select id="nuevoRol" class="select-autorizador">
             <option value="Usuario">Usuario</option>
@@ -69,6 +67,7 @@
       <div id="listaResumen"></div>
     </div>
   </div>
+
   <?!= include('admin_js'); ?>
 
   <script>
@@ -76,7 +75,6 @@
       localStorage.clear();
       window.location.replace(APP_URL);
     }
-
     function cerrarResumenFuera(event) {
       if (event.target === document.getElementById('modalResumen')) {
         cerrarResumen();
@@ -84,7 +82,7 @@
     }
   </script>
 
+  <?!= include('logo_data'); ?>
+
 </body>
 </html>
-
-

@@ -1,37 +1,104 @@
-﻿<!-- index.html -->
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Registro de Horas Extras</title>
-  <?!= include('styles'); ?>
   <script>const APP_URL = '<?!= getAppUrl(); ?>';</script>
-  <?!= include('logo_data'); ?>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #1d4f91, #0b7d84);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    .card {
+      background: #f5f5f5;
+      border-radius: 28px;
+      padding: 45px 40px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.18);
+      text-align: center;
+    }
+    .logo { width: 80px; margin-bottom: 20px; }
+    h1 { font-size: 28px; color: #111827; margin-bottom: 10px; font-weight: 700; }
+    p  { color: #6b7280; margin-bottom: 30px; font-size: 16px; }
+    label {
+      display: block; text-align: left; font-size: 14px;
+      color: #555; font-weight: 600; margin-top: 18px; margin-bottom: 8px;
+    }
+    input {
+      width: 100%; padding: 16px; border: 1px solid #d1d5db;
+      border-radius: 14px; font-size: 16px; background: #f9fafb; margin-bottom: 10px;
+    }
+    button {
+      width: 100%; padding: 16px; margin-top: 20px;
+      background: #1d4f91; color: white; border: none;
+      border-radius: 14px; font-size: 20px; font-weight: bold; cursor: pointer;
+    }
+    button:hover { background: #163d70; }
+    button:disabled { opacity: 0.6; }
+    .footer {
+      margin-top: 35px; border-top: 1px solid #e5e7eb; padding-top: 18px;
+      color: #9ca3af; font-size: 18px; font-family: 'Brush Script MT', cursive;
+      font-style: italic; opacity: 0.8;
+    }
+  </style>
 </head>
 <body>
+  <div class="card">
+    <img src="" data-logo alt="Logo" class="logo">
+    <h1>Registro de Horas Extras</h1>
+    <p>Ingresa tu codigo y contrasena</p>
 
-  <div class="login-container">
-    <div class="login-card">
-      <img src="" data-logo alt="Logo" class="logo">
-      <h1>Registro de Horas Extras</h1>
-      <p>Ingresa tu cÃ³digo y contraseÃ±a</p>
+    <label>CODIGO</label>
+    <input type="text" id="codigo" placeholder="Ej: 3" inputmode="numeric">
 
-      <label>CÃ“DIGO</label>
-      <input type="text" id="codigo" placeholder="Ej: 30">
+    <label>CONTRASENA</label>
+    <input type="password" id="pin" placeholder="Ej: 1003" inputmode="numeric">
 
-      <label>CONTRASEÃ‘A</label>
-      <input type="password" id="pin" placeholder="Ej: 1030">
+    <button id="btnLogin" onclick="login()">Ingresar</button>
 
-      <button onclick="login()">Ingresar</button>
-
-      <div class="footer-login">
-       Desarrollado por Rodrigo Pizarro G.
-      </div>
-    </div>
+    <div class="footer">Desarrollado por Rodrigo Pizarro G.</div>
   </div>
-  <?!= include('auth_js'); ?>
+
+  <script>
+    function login() {
+      var codigo = document.getElementById('codigo').value.trim();
+      var clave = document.getElementById('pin').value.trim();
+      var boton = document.getElementById('btnLogin');
+      if (!codigo || !clave) { alert('Ingresa tu codigo y contrasena'); return; }
+      boton.disabled = true;
+      boton.textContent = 'Ingresando...';
+      google.script.run
+        .withSuccessHandler(function(resp) {
+          boton.disabled = false;
+          boton.textContent = 'Ingresar';
+          if (!resp || !resp.ok) { alert('Codigo o contrasena incorrectos'); return; }
+          var u = resp.usuario;
+          localStorage.setItem('nombreUsuario', u.nombre);
+          localStorage.setItem('rolUsuario', u.rol);
+          localStorage.setItem('codigoUsuario', u.codigo);
+          localStorage.setItem('esAdmin', u.rol === 'Admin' ? 'si' : 'no');
+          window.location.href = u.rol === 'Admin'
+            ? APP_URL + '?page=admin'
+            : APP_URL + '?page=trabajador';
+        })
+        .withFailureHandler(function(err) {
+          boton.disabled = false;
+          boton.textContent = 'Ingresar';
+          alert('Error al iniciar sesion. Intenta de nuevo.');
+          console.error(err);
+        })
+        .validarLogin(codigo, clave);
+    }
+  </script>
+
+  <?!= include('logo_data'); ?>
 </body>
 </html>
-
-

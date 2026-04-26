@@ -4,47 +4,41 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Panel Trabajador</title>
-  <?!= include('styles'); ?>
   <script>const APP_URL = '<?!= getAppUrl(); ?>';</script>
-  <?!= include('logo_data'); ?>
+  <?!= include('styles'); ?>
 </head>
 <body>
 
   <div class="panel">
     <div class="top-bar">
-  <h1 id="bienvenida">Bienvenido, Juan Donoso Torres</h1>
-
-  <div class="top-right">
-  <img src="" data-logo alt="Logo" class="logo-top">
-
-  <button class="cerrar-btn" onclick="cerrarSesion()">Cerrar SesiÃ³n</button>
-</div>
-</div>
+      <h1 id="bienvenida">Bienvenido</h1>
+      <div class="top-right">
+        <img src="" data-logo alt="Logo" class="logo-top">
+        <button class="cerrar-btn" onclick="cerrarSesion()">Cerrar Sesion</button>
+      </div>
+    </div>
 
     <div class="card-solicitud">
-      <h2>Nueva Solicitud</h2>
-
+      <h2>Nueva Solicitud de Horas Extras</h2>
       <div class="form-grid">
         <input type="date" id="fecha">
         <input type="time" id="inicio">
         <input type="time" id="fin">
-        <textarea id="motivo" placeholder="Motivo"></textarea>
-
+        <textarea id="motivo" placeholder="Motivo de las horas extras"></textarea>
         <select id="autorizador" class="select-autorizador">
-        <option value="">Seleccionar autorizador</option>
-        <option value="Ariel Gonzalez">Ariel Gonzalez</option>
-         <option value="Rodrigo Andres Pizarro Gonzalez">Rodrigo Andres Pizarro Gonzalez</option>
+          <option value="">Cargando autorizadores...</option>
         </select>
-
         <button class="btn-enviar" onclick="guardarSolicitud()">Enviar Solicitud</button>
-        <div id="accesoAdmin" style="display:none; margin-top:20px;">
-  <button class="btn-enviar" onclick="window.location.href=APP_URL + '?page=admin'">
-    Ir a Panel Administrador
-  </button>
-</div>
       </div>
     </div>
+
+    <div id="accesoAdmin" style="display:none; margin-top:20px;">
+      <button class="btn-enviar" onclick="window.location.href = APP_URL + '?page=admin'">
+        Ir a Panel Administrador
+      </button>
+    </div>
   </div>
+
   <?!= include('trabajador_js'); ?>
 
   <script>
@@ -54,7 +48,7 @@
     }
   </script>
 
+  <?!= include('logo_data'); ?>
+
 </body>
 </html>
-
-

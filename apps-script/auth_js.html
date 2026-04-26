@@ -1,11 +1,11 @@
-<script>
+﻿<script>
 function login() {
   const codigoIngresado = document.getElementById('codigo').value.trim();
   const claveIngresada = document.getElementById('pin').value.trim();
   const boton = document.querySelector('.login-card button');
 
   if (!codigoIngresado || !claveIngresada) {
-    alert('Ingresa codigo y contraseña');
+    alert('Ingresa tu codigo y contrasena');
     return;
   }
 
@@ -13,12 +13,12 @@ function login() {
   boton.textContent = 'Ingresando...';
 
   google.script.run
-    .withSuccessHandler(respuesta => {
+    .withSuccessHandler(function(respuesta) {
       boton.disabled = false;
       boton.textContent = 'Ingresar';
 
       if (!respuesta || !respuesta.ok) {
-        alert('Codigo o contraseña incorrectos');
+        alert('Codigo o contrasena incorrectos');
         return;
       }
 
@@ -32,11 +32,11 @@ function login() {
         ? APP_URL + '?page=admin'
         : APP_URL + '?page=trabajador';
     })
-    .withFailureHandler(error => {
-      console.log(error);
+    .withFailureHandler(function(error) {
+      console.error(error);
       boton.disabled = false;
       boton.textContent = 'Ingresar';
-      alert('Error al iniciar sesion');
+      alert('Error al iniciar sesion. Intenta de nuevo.');
     })
     .validarLogin(codigoIngresado, claveIngresada);
 }
