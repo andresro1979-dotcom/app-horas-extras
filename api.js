@@ -1,4 +1,4 @@
-var GAS_URL = 'https://script.google.com/macros/s/AKfycbyj5DmlQmg-WxEG_WslrAtXIWzTAfpI5UY65KdU1_7puiiDhoCVAGv0FvHvYAHUTiI6/exec';
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbxZKVTC6AgKID-dkz77jaF_w_q5BWnaStFhvPoN8noTmHBRq6C8oGaPlhRJakFLn512/exec';
 
 function gasCall(accion, datos) {
   return new Promise(function(resolve) {

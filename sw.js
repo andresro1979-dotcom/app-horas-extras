@@ -1,4 +1,4 @@
-var CACHE = 'horas-extras-v3';
+var CACHE = 'horas-extras-v4';
 var ARCHIVOS = ['index.html', 'trabajador.html', 'admin.html', 'styles.css', 'api.js', 'logo.js', 'icon.svg', 'manifest.json'];
 
 self.addEventListener('install', function(e) {
