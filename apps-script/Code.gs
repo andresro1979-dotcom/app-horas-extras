@@ -4,12 +4,19 @@ function doGet(e) {
   var params = (e && e.parameter) || {};
 
   if (params.accion) {
+    var result;
     try {
       var datos = params.datos ? JSON.parse(params.datos) : {};
-      return responderJson(manejarAccion_(params.accion, datos));
+      result = manejarAccion_(params.accion, datos);
     } catch (err) {
-      return responderJson({ ok: false, error: err.message });
+      result = { ok: false, error: err.message };
     }
+    if (params.callback) {
+      return ContentService
+        .createTextOutput(params.callback + '(' + JSON.stringify(result) + ')')
+        .setMimeType(ContentService.MimeType.JAVASCRIPT);
+    }
+    return responderJson(result);
   }
 
   var page = params.page || 'index';
@@ -208,6 +215,8 @@ function obtenerHojaUsuarios_() {
   if (!sheet) sheet = ss.insertSheet('Usuarios');
   if (sheet.getLastRow() === 0) {
     sheet.appendRow(['codigo','clave','nombre','rol','activo']);
+  }
+  if (sheet.getLastRow() <= 1) {
     usuariosIniciales_().forEach(function(u) {
       sheet.appendRow([u.codigo, u.clave, u.nombre, u.rol, true]);
     });

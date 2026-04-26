@@ -62,7 +62,11 @@
           window.location.href = res.usuario.rol === 'Admin' ? 'admin.html' : 'trabajador.html';
         } else {
           err.style.display = 'block';
-          err.textContent = 'Codigo o contrasena incorrectos';
+          if (res.error === 'timeout' || res.error === 'red') {
+            err.textContent = 'Sin conexion al servidor. Verifica tu internet e intenta de nuevo.';
+          } else {
+            err.textContent = 'Codigo o contrasena incorrectos';
+          }
           btn.disabled = false;
           btn.textContent = 'Ingresar';
         }
