@@ -44,7 +44,7 @@
   <script>
     function cerrarSesion() {
       localStorage.clear();
-      window.location.replace(APP_URL);
+      window.top.location.href = APP_URL + '?t=' + Date.now();
     }
   </script>
 
