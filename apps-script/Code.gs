@@ -278,7 +278,7 @@ function usuariosIniciales_() {
   return [
     { codigo: '1',  clave: '1001', nombre: 'Alejandro Guzman',                rol: 'Usuario' },
     { codigo: '2',  clave: '1002', nombre: 'Juan Donoso Torres',               rol: 'Usuario' },
-    { codigo: '3',  clave: '1003', nombre: 'Ariel Gonzalez',                   rol: 'Admin'   },
+    { codigo: '30', clave: '1030', nombre: 'Ariel Gonzalez',                   rol: 'Admin'   },
     { codigo: '4',  clave: '1004', nombre: 'Bernardo Perez Cofre',             rol: 'Usuario' },
     { codigo: '5',  clave: '1005', nombre: 'Claudio Sanueza De la Fuente',     rol: 'Usuario' },
     { codigo: '6',  clave: '1006', nombre: 'Edinson Castillo',                 rol: 'Usuario' },
