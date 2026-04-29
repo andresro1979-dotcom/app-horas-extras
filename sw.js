@@ -1,4 +1,4 @@
-var CACHE = 'horas-extras-v6';
+var CACHE = 'horas-extras-v7';
 var ARCHIVOS = ['index.html', 'manifest.json', 'icon.svg'];
 
 self.addEventListener('install', function(e) {
@@ -17,10 +17,6 @@ self.addEventListener('activate', function(e) {
       );
     }).then(function() {
       return self.clients.claim();
-    }).then(function() {
-      return self.clients.matchAll({ type: 'window' });
-    }).then(function(clients) {
-      clients.forEach(function(client) { client.navigate(client.url); });
     })
   );
 });

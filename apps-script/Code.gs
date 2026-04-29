@@ -100,10 +100,22 @@ function listarSolicitudes() {
   var sheet = obtenerHojaSolicitudes_();
   var values = sheet.getDataRange().getValues();
   if (values.length <= 1) return [];
-  var headers = values[0];
   return values.slice(1)
     .filter(function(row) { return row.some(function(v) { return v !== ''; }); })
-    .map(function(row) { return convertirFilaAObjeto_(headers, row); });
+    .map(function(row) {
+      return {
+        id:            String(row[0]),
+        fecha:         normalizarValor_(row[1]),
+        codigo:        String(row[2]),
+        nombre:        String(row[3]),
+        inicio:        normalizarValor_(row[4]),
+        fin:           normalizarValor_(row[5]),
+        totalHoras:    row[6],
+        motivo:        String(row[7]),
+        estado:        String(row[8]),
+        autorizadoPor: String(row[9])
+      };
+    });
 }
 
 function listarUsuarios() {
@@ -175,16 +187,15 @@ function guardarSolicitud(datos) {
   validarSolicitud_(datos);
   var sheet  = obtenerHojaSolicitudes_();
   var id     = Utilities.getUuid();
-  var creado = new Date();
   var estado = datos.estado || 'Pendiente';
 
   sheet.appendRow([id, datos.fecha, datos.codigo, datos.nombre, datos.inicio, datos.fin,
-    Number(datos.totalHoras), datos.motivo, estado, datos.autorizadoPor, creado]);
+    Number(datos.totalHoras), datos.motivo, estado, datos.autorizadoPor]);
 
   if (estado === 'Aprobada') {
     registrarAprobacionEnControl_({
       id: id, fecha: datos.fecha, codigo: datos.codigo, nombre: datos.nombre,
-      totalHoras: datos.totalHoras, aprobadoPor: datos.autorizadoPor, fechaAprobacion: creado
+      totalHoras: datos.totalHoras, aprobadoPor: datos.autorizadoPor, fechaAprobacion: new Date()
     });
   }
   return { ok: true, id: id };
@@ -194,18 +205,21 @@ function cambiarEstadoSolicitud(id, estado) {
   if (!id) throw new Error('Falta el ID de la solicitud.');
   if (['Aprobada', 'Rechazada', 'Pendiente'].indexOf(estado) < 0) throw new Error('Estado no valido.');
 
-  var sheet   = obtenerHojaSolicitudes_();
-  var values  = sheet.getDataRange().getValues();
-  var headers = values[0];
+  var sheet  = obtenerHojaSolicitudes_();
+  var values = sheet.getDataRange().getValues();
 
   for (var i = 1; i < values.length; i++) {
     if (String(values[i][0]) === String(id)) {
       sheet.getRange(i + 1, 9).setValue(estado);
       if (estado === 'Aprobada') {
-        var fila = convertirFilaAObjeto_(headers, values[i]);
         registrarAprobacionEnControl_({
-          id: fila.id, fecha: fila.fecha, codigo: fila.codigo, nombre: fila.nombre,
-          totalHoras: fila.totalHoras, aprobadoPor: fila.autorizadoPor, fechaAprobacion: new Date()
+          id:              String(values[i][0]),
+          fecha:           values[i][1],
+          codigo:          values[i][2],
+          nombre:          values[i][3],
+          totalHoras:      values[i][6],
+          aprobadoPor:     values[i][9],
+          fechaAprobacion: new Date()
         });
       }
       return { ok: true, id: id, estado: estado };
@@ -221,10 +235,11 @@ function responderJson(data) {
 
 function obtenerHojaSolicitudes_() {
   var ss    = SpreadsheetApp.openById(SPREADSHEET_ID);
-  var sheet = ss.getSheetByName('Solicitudes');
-  if (!sheet) sheet = ss.insertSheet('Solicitudes');
-  if (sheet.getLastRow() === 0)
-    sheet.appendRow(['id','fecha','codigo','nombre','inicio','fin','totalHoras','motivo','estado','autorizadoPor','creado']);
+  var sheet = ss.getSheetByName('Horas Extras');
+  if (!sheet) {
+    sheet = ss.insertSheet('Horas Extras');
+    sheet.appendRow(['ID','Fecha','Codigo','Nombre','Hora Inicio','Hora Termino','Total Horas','Motivo','Estado','Autorizado Por']);
+  }
   return sheet;
 }
 
@@ -288,9 +303,12 @@ function convertirFilaAObjeto_(headers, row) {
 }
 
 function normalizarValor_(value) {
-  if (value instanceof Date)
-    return Utilities.formatDate(value, Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm:ss');
-  return value;
+  if (!(value instanceof Date)) return value;
+  var tz = Session.getScriptTimeZone();
+  // Valores de tiempo en Google Sheets tienen epoch 1899/1900
+  if (value.getFullYear() <= 1900)
+    return Utilities.formatDate(value, tz, 'HH:mm');
+  return Utilities.formatDate(value, tz, 'yyyy-MM-dd');
 }
 
 function validarSolicitud_(datos) {

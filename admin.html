@@ -310,8 +310,8 @@
     function formatearHora(hora) {
       if (!hora) return '';
       var str = String(hora);
-      if (/^\d{1,2}:\d{2}$/.test(str)) return str;
-      var iso = str.match(/T(\d{2}):(\d{2})/);
+      if (/^\d{1,2}:\d{2}(:\d{2})?$/.test(str)) return str.slice(0, 5);
+      var iso = str.match(/[ T](\d{2}):(\d{2})/);
       if (iso) return iso[1] + ':' + iso[2];
       if (!isNaN(str) && str.includes('.')) {
         var min = Math.round(parseFloat(str) * 24 * 60);
