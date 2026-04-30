@@ -88,6 +88,21 @@ function reiniciarUsuarios_() {
   return { ok: true, mensaje: 'Usuarios recreados: ' + todos.length };
 }
 
+function obtenerPeriodoVigente() {
+  try {
+    var ss   = SpreadsheetApp.openById(SPREADSHEET_ID);
+    var hoja = ss.getSheetByName('Configuracion');
+    if (!hoja) return { ok: true, periodos: [] };
+    var data = hoja.getDataRange().getValues();
+    for (var i = 0; i < data.length; i++) {
+      if (String(data[i][0]) === 'periodos' && data[i][1]) {
+        return { ok: true, periodos: JSON.parse(String(data[i][1])) };
+      }
+    }
+  } catch(e) {}
+  return { ok: true, periodos: [] };
+}
+
 function include(filename) {
   return HtmlService.createHtmlOutputFromFile(filename).getContent();
 }

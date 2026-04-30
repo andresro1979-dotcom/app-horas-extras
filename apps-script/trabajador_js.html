@@ -15,7 +15,23 @@
     document.getElementById('accesoAdmin').style.display = 'block';
   }
 
+  var periodoFin = null;
+
   cargarAutorizadores();
+  cargarPeriodo();
+
+  function cargarPeriodo() {
+    google.script.run
+      .withSuccessHandler(function(res) {
+        if (!res || !res.periodos || res.periodos.length === 0) return;
+        var maxHasta = '';
+        res.periodos.forEach(function(p) {
+          if (p.hasta && p.hasta > maxHasta) maxHasta = p.hasta;
+        });
+        periodoFin = maxHasta || null;
+      })
+      .obtenerPeriodoVigente();
+  }
 
   function cargarAutorizadores() {
     google.script.run
@@ -76,6 +92,13 @@
       estado: estado,
       autorizadoPor: autorizadoPor
     };
+
+    if (periodoFin && fecha > periodoFin) {
+      var fmtFin = periodoFin.split('-').reverse().join('-');
+      if (!confirm('La fecha ingresada supera el cierre del período vigente (' + fmtFin + ').\n\nTus horas quedarán registradas en el siguiente período.\n\n¿Deseas continuar?')) {
+        return;
+      }
+    }
 
     boton.disabled = true;
     boton.textContent = 'Enviando...';
