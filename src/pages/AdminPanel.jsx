@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { api } from '../api/api'
 import Navbar from '../components/Navbar'
+import { formatHoras } from '../utils/formatHoras'
 
 const ESTADO_BADGE = {
   'Pendiente': 'bg-yellow-100 text-yellow-800 border-yellow-200',
@@ -122,7 +123,7 @@ export default function AdminPanel() {
                 </div>
 
                 <div className="flex items-center gap-3 mb-2">
-                  <span className="text-blue-600 font-bold">{sol.totalHoras} hrs</span>
+                  <span className="text-blue-600 font-bold">{formatHoras(sol.totalHoras)}</span>
                   <span className="text-gray-400 text-sm">{sol.inicio} → {sol.fin}</span>
                 </div>
 

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { api } from '../api/api'
 import Navbar from '../components/Navbar'
+import { formatHoras } from '../utils/formatHoras'
 
 function calcHoras(inicio, fin) {
   if (!inicio || !fin) return null
@@ -64,7 +65,7 @@ export default function NuevaSolicitud() {
         nombre:        form.nombreTrabajador,
       })
       if (result.success) {
-        setSuccess(`✓ Solicitud enviada correctamente. Total: ${result.totalHoras} horas`)
+        setSuccess(`✓ Solicitud enviada correctamente. Total: ${formatHoras(result.totalHoras)}`)
         setTimeout(() => navigate('/solicitudes'), 2200)
       } else {
         setError(result.error || 'Error al enviar la solicitud')
@@ -136,7 +137,7 @@ export default function NuevaSolicitud() {
 
             {horas !== null && (
               <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-2 text-center">
-                <span className="text-blue-700 font-bold text-lg">{horas} horas</span>
+                <span className="text-blue-700 font-bold text-lg">{formatHoras(horas)}</span>
               </div>
             )}
 
