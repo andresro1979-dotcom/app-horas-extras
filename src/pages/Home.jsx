@@ -55,11 +55,22 @@ export default function Home() {
       <Navbar title="Inicio" />
       <div className="p-4 max-w-lg mx-auto">
         <div className="bg-gradient-to-br from-blue-700 to-blue-800 text-white rounded-2xl p-5 mb-6 shadow-md">
-          <p className="text-blue-200 text-sm">Bienvenido</p>
-          <h2 className="text-xl font-bold mt-0.5">{usuario?.nombre}</h2>
-          <p className="text-blue-300 text-sm">{usuario?.rol}</p>
+          <div className="flex items-center gap-4">
+            {usuario?.foto ? (
+              <img src={usuario.foto} alt="Foto" className="w-14 h-14 rounded-full object-cover border-2 border-blue-400 shrink-0" />
+            ) : (
+              <div className="w-14 h-14 rounded-full bg-blue-600 flex items-center justify-center text-2xl font-bold border-2 border-blue-400 shrink-0">
+                {usuario?.nombre?.charAt(0) ?? '?'}
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="text-blue-200 text-sm">Bienvenido</p>
+              <h2 className="text-xl font-bold mt-0.5 leading-tight">{usuario?.nombre}</h2>
+              <p className="text-blue-300 text-sm">{usuario?.cargo || usuario?.rol}</p>
+            </div>
+          </div>
           {periodoActual && (
-            <p className="text-blue-200 text-xs mt-2">
+            <p className="text-blue-200 text-xs mt-3 border-t border-blue-600 pt-2">
               Período {periodoActual.numero}: {periodoActual.inicio} → {periodoActual.fin}
             </p>
           )}

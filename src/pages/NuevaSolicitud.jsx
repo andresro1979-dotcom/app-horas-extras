@@ -3,16 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { api } from '../api/api'
 import Navbar from '../components/Navbar'
-import { formatHoras } from '../utils/formatHoras'
-
-function calcHoras(inicio, fin) {
-  if (!inicio || !fin) return null
-  const [h1, m1] = inicio.split(':').map(Number)
-  const [h2, m2] = fin.split(':').map(Number)
-  let mins = (h2 * 60 + m2) - (h1 * 60 + m1)
-  if (mins < 0) mins += 24 * 60
-  return (mins / 60).toFixed(2)
-}
+import { formatHoras, calcHoras } from '../utils/formatHoras'
 
 export default function NuevaSolicitud() {
   const { usuario } = useAuth()

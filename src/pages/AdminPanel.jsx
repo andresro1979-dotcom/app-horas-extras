@@ -3,12 +3,7 @@ import { useAuth } from '../context/AuthContext'
 import { api } from '../api/api'
 import Navbar from '../components/Navbar'
 import { formatHoras } from '../utils/formatHoras'
-
-const ESTADO_BADGE = {
-  'Pendiente': 'bg-yellow-100 text-yellow-800 border-yellow-200',
-  'Aprobada':  'bg-green-100 text-green-800 border-green-200',
-  'Rechazada': 'bg-red-100 text-red-800 border-red-200',
-}
+import { ESTADO_BADGE } from '../utils/constants'
 
 const FILTROS = ['Pendiente', 'Aprobada', 'Rechazada', 'Todos']
 
@@ -19,6 +14,7 @@ export default function AdminPanel() {
   const [loading, setLoading] = useState(true)
   const [procesando, setProcesando] = useState(null)
   const [error, setError] = useState('')
+  const [errorAccion, setErrorAccion] = useState('')
 
   const cargar = useCallback(() => {
     setLoading(true)
@@ -36,6 +32,7 @@ export default function AdminPanel() {
 
   const handleEstado = async (id, estado) => {
     setProcesando(id)
+    setErrorAccion('')
     try {
       const result = await api.actualizarEstado(id, estado, usuario.nombre)
       if (result.success) {
@@ -43,10 +40,10 @@ export default function AdminPanel() {
           prev.map(s => s.id === id ? { ...s, estado, autorizadoPor: usuario.nombre } : s)
         )
       } else {
-        alert(result.error || 'Error al actualizar estado')
+        setErrorAccion(result.error || 'Error al actualizar estado')
       }
     } catch {
-      alert('Error de conexión')
+      setErrorAccion('Error de conexión. Verifica tu internet e intenta nuevamente.')
     } finally {
       setProcesando(null)
     }
@@ -92,6 +89,12 @@ export default function AdminPanel() {
             </button>
           ))}
         </div>
+
+        {errorAccion && (
+          <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm mb-4">
+            {errorAccion}
+          </div>
+        )}
 
         {loading ? (
           <div className="text-center text-gray-400 py-16">
