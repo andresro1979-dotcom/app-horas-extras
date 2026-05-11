@@ -43,14 +43,14 @@ export default function Login() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Código de trabajador
+              Código de Funcionario
             </label>
             <input
               type="number"
               value={codigo}
               onChange={e => setCodigo(e.target.value)}
               className="w-full border border-gray-300 rounded-xl px-4 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Ej: 15"
+              placeholder="Tu Codigo"
               inputMode="numeric"
               autoComplete="username"
             />
