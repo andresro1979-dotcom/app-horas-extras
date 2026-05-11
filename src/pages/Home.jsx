@@ -4,6 +4,16 @@ import { useAuth } from '../context/AuthContext'
 import { api } from '../api/api'
 import Navbar from '../components/Navbar'
 
+function fmtFecha(str) {
+  if (!str) return ''
+  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+    const [y, m, d] = str.split('-')
+    return `${d}/${m}/${y}`
+  }
+  const d = new Date(str)
+  return isNaN(d) ? str : `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`
+}
+
 export default function Home() {
   const { usuario } = useAuth()
   const navigate = useNavigate()
@@ -71,7 +81,7 @@ export default function Home() {
           </div>
           {periodoActual && (
             <p className="text-blue-200 text-xs mt-3 border-t border-blue-600 pt-2">
-              Período {periodoActual.numero}: {periodoActual.inicio} → {periodoActual.fin}
+              Período {periodoActual.numero}: {fmtFecha(periodoActual.inicio)} al {fmtFecha(periodoActual.fin)}
             </p>
           )}
         </div>

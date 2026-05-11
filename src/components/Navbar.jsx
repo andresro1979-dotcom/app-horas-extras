@@ -22,10 +22,10 @@ export default function Navbar({ title, back }) {
 
       <button
         onClick={logout}
-        className="text-sm text-blue-200 hover:text-white transition-colors w-9 text-right"
+        className="text-sm font-semibold text-blue-200 hover:text-white transition-colors"
         title="Cerrar sesión"
       >
-        ⏻
+        Salir
       </button>
     </div>
   )
