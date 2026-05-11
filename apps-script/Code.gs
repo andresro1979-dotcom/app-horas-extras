@@ -90,8 +90,8 @@ function getSolicitudes(codigo, rol) {
       fecha:         formatFecha(r[1]),
       codigo:        String(r[2]),
       nombre:        r[3],
-      inicio:        r[4],
-      fin:           r[5],
+      inicio:        formatTime(r[4]),
+      fin:           formatTime(r[5]),
       totalHoras:    r[6],
       motivo:        r[7],
       estado:        r[8] || 'Pendiente',
@@ -214,6 +214,12 @@ function calcHoras(inicio, fin) {
 function formatFecha(val) {
   if (!val) return '';
   if (val instanceof Date) return Utilities.formatDate(val, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  return String(val);
+}
+
+function formatTime(val) {
+  if (!val) return '';
+  if (val instanceof Date) return Utilities.formatDate(val, Session.getScriptTimeZone(), 'HH:mm');
   return String(val);
 }
 
