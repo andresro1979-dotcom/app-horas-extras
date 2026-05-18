@@ -19,11 +19,12 @@ export default function NuevaSolicitud() {
     codigoTrabajador: usuario.codigo,
     nombreTrabajador: usuario.nombre,
   })
-  const [admins, setAdmins] = useState([])
+  const [admins, setAdmins]           = useState([])
   const [trabajadores, setTrabajadores] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
+  const [periodos, setPeriodos]       = useState([])
+  const [loading, setLoading]         = useState(false)
+  const [error, setError]             = useState('')
+  const [success, setSuccess]         = useState('')
 
   useEffect(() => {
     api.getTrabajadores().then(res => {
@@ -32,10 +33,30 @@ export default function NuevaSolicitud() {
         setTrabajadores(res.trabajadores)
       }
     }).catch(() => {})
+
+    api.getConfig().then(res => {
+      if (res.periodos) setPeriodos(res.periodos)
+    }).catch(() => {})
   }, [])
 
   const set = (key, val) => setForm(f => ({ ...f, [key]: val }))
   const horas = calcHoras(form.inicio, form.fin)
+
+  // Detecta si la fecha cae fuera del período activo
+  const avisoProximoPeriodo = (() => {
+    if (!form.fecha || periodos.length === 0) return false
+    const fecha = new Date(form.fecha + 'T00:00:00')
+    const activo = periodos.find(p => {
+      const ini = new Date(p.inicio + 'T00:00:00')
+      const fin = new Date(p.fin + 'T00:00:00')
+      return fecha >= ini && fecha <= fin
+    })
+    if (activo) return false
+    // Está fuera de todos los períodos — verificar si es fecha futura al último período
+    const ultimo = periodos[periodos.length - 1]
+    if (!ultimo) return false
+    return fecha > new Date(ultimo.fin + 'T00:00:00')
+  })()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -104,6 +125,16 @@ export default function NuevaSolicitud() {
                 className="w-full border border-gray-300 rounded-xl px-3 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
+
+            {/* Aviso período */}
+            {avisoProximoPeriodo && (
+              <div className="bg-amber-50 border border-amber-300 rounded-xl px-4 py-3 flex gap-2 items-start">
+                <span className="text-amber-500 text-lg leading-none mt-0.5">⚠️</span>
+                <p className="text-amber-800 text-sm">
+                  Estas horas extras corresponderán al <strong>próximo período</strong>. Se guardarán igualmente hasta que sea definido.
+                </p>
+              </div>
+            )}
 
             <div className="grid grid-cols-2 gap-3">
               <div>
