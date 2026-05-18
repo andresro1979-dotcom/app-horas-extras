@@ -111,13 +111,10 @@ function crearSolicitud(sol) {
   const sheet = getSheet(CONFIG.SHEETS.SOLICITUDES);
   if (!sheet) return { error: 'Hoja Solicitudes no encontrada.' };
 
-  const config = getConfigData();
-  const maxHoras = config.maxHorasDia || 4;
-
   const totalHoras = calcHoras(sol.inicio, sol.fin);
   if (totalHoras === null) return { error: 'Horas de inicio/fin inválidas' };
-  if (totalHoras > maxHoras) return { error: `Máximo ${maxHoras} horas por día permitidas (solicitadas: ${totalHoras})` };
   if (totalHoras <= 0) return { error: 'La hora de término debe ser posterior a la de inicio' };
+  if (totalHoras > 23) return { error: 'No se pueden registrar más de 23 horas por día' };
 
   const id     = Utilities.getUuid();
   const creado = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd/MM/yyyy HH:mm:ss');
